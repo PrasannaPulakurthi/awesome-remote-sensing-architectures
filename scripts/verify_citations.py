@@ -60,8 +60,36 @@ STAR_RE = re.compile(r"`(?P<stars>[\d,]+)★`")
 VENUE_TAG_RE = re.compile(r"^(?P<venue>.+?)'(?P<yy>\d{2})†?$")
 
 
+HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(?P<start>\d+)(?:,(?P<count>\d+))? @@")
+
+
 def norm(text):
     return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+
+def changed_lines_from_git(base, path):
+    """Line numbers touched in `path` relative to `base`.
+
+    Done here rather than with shell text processing so it behaves identically
+    on every platform and can be tested locally.
+    """
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["git", "diff", "--unified=0", base + "...HEAD", "--", path],
+            capture_output=True, text=True, check=True).stdout
+    except Exception as exc:
+        sys.stderr.write("git diff failed: %s\n" % exc)
+        return set()
+    lines = set()
+    for row in out.splitlines():
+        m = HUNK_RE.match(row)
+        if not m:
+            continue
+        start = int(m.group("start"))
+        count = int(m.group("count") or 1)
+        lines.update(range(start, start + count))
+    return lines
 
 
 def fetch(url, timeout=30, accept=None):
@@ -304,6 +332,8 @@ def main():
     ap.add_argument("--readme", default="README.md")
     ap.add_argument("--only")
     ap.add_argument("--changed-lines")
+    ap.add_argument("--diff-base",
+                    help="verify only entries touched since this git ref")
     ap.add_argument("--no-stars", action="store_true")
     ap.add_argument("--delay", type=float, default=1.0)
     ap.add_argument("--markdown", action="store_true")
@@ -315,12 +345,19 @@ def main():
     entries = parse_entries(text)
     if args.only:
         entries = [e for e in entries if args.only.lower() in e.name.lower()]
+    wanted = set()
     if args.changed_lines and os.path.exists(args.changed_lines):
         with open(args.changed_lines, encoding="utf-8") as fh:
-            wanted = set(int(x) for x in fh.read().split() if x.strip().isdigit())
-        if wanted:
-            entries = [e for e in entries
-                       if any(e.line_no <= n <= e.line_no + 3 for n in wanted)]
+            wanted |= set(int(x) for x in fh.read().split() if x.strip().isdigit())
+    if args.diff_base:
+        wanted |= changed_lines_from_git(args.diff_base, args.readme)
+    if wanted:
+        entries = [e for e in entries
+                   if any(e.line_no <= n <= e.line_no + 3 for n in wanted)]
+    elif args.diff_base or args.changed_lines:
+        # A diff was requested but touched no entries. Verifying everything here
+        # would be wrong: it would turn a docs-only PR into a full sweep.
+        entries = []
 
     if not entries:
         print("No entries to verify.")
