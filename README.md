@@ -761,6 +761,81 @@ Practical guidance:
 
 ---
 
+## Satellite Image Time Series
+
+Optical time series are irregularly sampled, cloud-interrupted and seasonally
+structured. The architectural question is how to encode a variable-length,
+unevenly-spaced temporal axis without pretending it is a video.
+
+- **U-TAE** — Convolutional temporal attention encoder giving the first
+  end-to-end single-stage panoptic segmentation of satellite image time series.
+  Introduces PASTIS, the first open SITS dataset with panoptic annotations.
+  [`paper`](https://arxiv.org/abs/2107.07933) [`code`](https://github.com/VSainteuf/utae-paps) [`PASTIS`](https://github.com/VSainteuf/pastis-benchmark) `ICCV'21` `panoptic segmentation, crop mapping`
+- **Exchanger** — Reformulates SITS processing as set prediction rather than
+  sequence modelling, targeting irregular acquisition times directly.
+  [`paper`](https://arxiv.org/abs/2305.02086) `preprint` `segmentation, crop mapping`
+
+Time-series capability also appears in several models listed elsewhere:
+
+- [Galileo](#multi-modal-foundation-models) — handles both image and pixel
+  time-series tasks across nine modalities. `ICML'25`
+- [AnySat](#multi-modal-foundation-models) — joint training across sensors and
+  resolutions including time series. `CVPR'25`
+- [OmniSat](#multi-modal-foundation-models) — fuses VHR aerial with Sentinel-1/2
+  time series; contributes PASTIS-HD. `ECCV'24`
+- [SatMAE](#masked-image-modeling) — temporal embeddings with independent
+  per-timestep masking. `NeurIPS'22`
+- [TESSERA / Presto](#coverage-status) — pixel-timeseries embedding models,
+  pending venue verification.
+
+---
+
+## SAR
+
+Speckle is multiplicative, not additive, so denoising architectures built for
+optical noise do not transfer. The absence of clean reference images also makes
+supervised training impossible, which is why self-supervision dominates here.
+
+- **MERLIN** — Self-supervised despeckling that exploits the statistical
+  independence of the real and imaginary parts of single-look complex SAR,
+  training without any speckle-free reference data.
+  [`paper`](https://arxiv.org/abs/2110.13148) `TGRS'22` `despeckling, self-supervised`
+
+SAR-relevant architectures listed elsewhere:
+
+- [SARATR-X](#agency--open-release-models) — first SAR target recognition
+  foundation model. `IEEE TIP'25`
+- [SARDet-100K / MSFA](#oriented-object-detection) — COCO-scale multi-class SAR
+  detection benchmark with filter-augmentation pretraining. `NeurIPS'24`
+- [CROMA](#contrastive--geo-aware-self-supervision) — contrastive radar-optical
+  masked autoencoding. `NeurIPS'23`
+- [MSFMamba](#fusion-detection-denoising--restoration) — multi-source fusion
+  including SAR. `TGRS'25`
+- [TerraMind](#multi-modal-foundation-models) — generates SAR modalities
+  as intermediate reasoning steps. `ICCV'25`
+
+---
+
+## 3D, LiDAR & Neural Fields
+
+Reconstructing geometry from satellite imagery has to contend with pushbroom RPC
+camera models, multi-date acquisitions with moving shadows, and transient objects
+between captures — none of which standard multi-view pipelines assume.
+
+- **Sat-NeRF** — Neural radiance fields adapted to RPC satellite camera models,
+  with explicit shadow and transient-object modelling for multi-date imagery.
+  ⚠ `CVPR EarthVision Workshop`
+  [`paper`](https://arxiv.org/abs/2203.08896) `2022` `3D reconstruction, novel view synthesis`
+
+Cross-modal 3D work listed elsewhere:
+
+- [HLMamba](#fusion-detection-denoising--restoration) — hyperspectral and LiDAR
+  fusion via cross-modal state-space blocks. `TGRS'24`
+- [RSMTMamba](#dense-prediction--segmentation) — joint segmentation, height
+  estimation and boundary detection. `TGRS'25`
+
+---
+
 ## Libraries & Tooling
 
 Frameworks that make the models above practical to train, fine-tune and deploy.
@@ -822,15 +897,28 @@ covered is more useful than implying uniform depth.
 | Efficient architectures | **Complete** |
 | Vision-language models | **Partial** — verified entries only; many recent models not yet indexed |
 | Diffusion & generative | **Partial** — verified entries only |
-| SAR | **Planned** — currently only cross-references; despeckling, ATR and InSAR missing |
-| 3D, LiDAR & neural fields | **Planned** — Sat-NeRF, Gaussian splatting, height estimation missing |
-| Satellite image time series | **Planned** — U-TAE, TSViT, Presto and crop mapping missing |
+| SAR | **Seeded** — despeckling and cross-references; ATR and InSAR still missing |
+| 3D, LiDAR & neural fields | **Seeded** — Sat-NeRF added; Gaussian splatting and height estimation missing |
+| Satellite image time series | **Seeded** — U-TAE added; TSViT, Presto and TESSERA pending verification |
 | Surveys | **Planned** |
 | Benchmarks & datasets | **Partial** — hyperspectral only; segmentation, CD, detection and SITS benchmarks missing |
 
-Planned sections are genuinely absent rather than thin — they are not yet
-researched to the verification standard the rest of the list meets. Contributions
-toward them are especially welcome.
+Planned sections are genuinely absent rather than thin, and seeded sections are
+deliberately short — they contain only entries verified against a primary source,
+plus cross-references to relevant models indexed elsewhere in the list.
+Contributions toward them are especially welcome.
+
+**Known entries awaiting verification.** These are real papers that belong in the
+list, held back only because their venue could not be confirmed against a primary
+source during indexing:
+
+- **TSViT** (*ViTs for SITS: Vision Transformers for Satellite Image Time Series*)
+  — arXiv identifier and title confirmed; venue not stated on arXiv and the
+  proceedings page was unreachable.
+- **SAR2SAR** — JSTARS confirmed, but the publication year is ambiguous between
+  early access and volume year, which matters against the 2021 cutoff.
+- **Presto** and **TESSERA** — pixel-timeseries models with released weights;
+  venue confirmation incomplete.
 
 ### On verification
 
