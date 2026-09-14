@@ -46,6 +46,7 @@ checked to resolve. Corrections are the most welcome kind of contribution — se
 | `preprint` | Not peer-reviewed at a listed venue, but widely adopted **and** ships code or weights. |
 | `weights: gated` | Checkpoints exist but require a request, or are non-commercial only. |
 | ⚠ | Venue sits outside the policy below; kept because the work is canonical for its sub-area. |
+| † | Venue reported by a secondary source; not yet confirmed against a primary source. |
 
 ### Venue policy
 
@@ -311,7 +312,7 @@ extreme size of a single scene.
 - **CrossEarth** — Earth-style injection augmentation combined with multi-task
   DINOv2 backbone adaptation for cross-domain segmentation without target-domain
   data.
-  [`paper`](https://arxiv.org/abs/2410.22629) [`code`](https://github.com/Cuzyoung/CrossEarth) `TPAMI'25` `domain generalization` `189★`
+  [`paper`](https://arxiv.org/abs/2410.22629) [`code`](https://github.com/Cuzyoung/CrossEarth) `preprint` `domain generalization` `189★`
 
 ### Change detection
 
@@ -522,10 +523,10 @@ architectures whose primary contribution is a different **cost** profile.
 - **DeepKANSeg** — A DeepKAN refinement module and global-local decoder built from
   Kolmogorov-Arnold linear layers, decomposing high-dimensional features into
   univariate learnable transforms.
-  [`paper`](https://arxiv.org/abs/2501.07390) [`code`](https://github.com/sstary/SSRS) `TGRS'26` `segmentation, KAN` `806★`
+  [`paper`](https://arxiv.org/abs/2501.07390) [`code`](https://github.com/sstary/SSRS) `preprint` `segmentation, KAN` `806★`
 - **RSRWKV** — 2D-WKV scanning in four directions removes RWKV's one-dimensional
   anisotropy, plus multi-view convolutional shift and efficient channel attention.
-  [`paper`](https://arxiv.org/abs/2503.20382) `2025` `linear attention` `no code`
+  [`paper`](https://arxiv.org/abs/2503.20382) `preprint` `linear attention` `no code`
 
 ---
 
@@ -707,14 +708,14 @@ Practical guidance:
   [`paper`](https://openaccess.thecvf.com/content/CVPR2024/html/Kuckreja_GeoChat_Grounded_Large_Vision-Language_Model_for_Remote_Sensing_CVPR_2024_paper.html) [`code`](https://github.com/mbzuai-oryx/GeoChat) `CVPR'24` `MLLM, grounding`
 - **EarthGPT** — Universal multimodal LLM for multi-sensor comprehension, spanning
   optical, SAR and infrared in a single instruction-following model.
-  [`paper`](https://ieeexplore.ieee.org/document/10547418) `TGRS'24` `MLLM, multi-sensor`
+  [`paper`](https://arxiv.org/abs/2401.16822) `TGRS'24†` `MLLM, multi-sensor`
 - **LHRS-Bot** — Uses volunteered geographic information (OpenStreetMap) paired with
   imagery to build instruction data at scale, rather than relying on human
   annotation.
-  [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24` `MLLM, instruction tuning`
+  [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24†` `MLLM, instruction tuning`
 - **RSGPT** — Remote sensing vision-language model released alongside a
   human-annotated captioning and VQA benchmark.
-  [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25` `MLLM, captioning, VQA`
+  [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25†` `MLLM, captioning, VQA`
 - **RMSIN** — Intra-scale and cross-scale interaction with adaptive rotated
   convolution for *referring* segmentation, where the query is free text. Introduces
   the RRSIS-D benchmark.
@@ -839,8 +840,16 @@ link was confirmed to resolve. Star counts were captured at indexing time and
 drift; treat them as indicative.
 
 Where a venue could not be confirmed, the entry is marked `preprint` rather than
-given a plausible-looking guess. A wrong citation in a list like this propagates
-into other people's bibliographies, so absence is preferred to invention.
+given a plausible-looking guess. Where a venue is reported by a secondary source
+but not yet confirmed against a publisher or proceedings page, it carries a
+† marker. A wrong citation in a list like this propagates into other people's
+bibliographies, so absence is preferred to invention.
+
+Known verification gaps, stated plainly:
+
+- The three †-marked vision-language entries have confirmed arXiv identifiers and
+  titles, but their journal/conference venues rest on secondary sources.
+- Star counts were captured at indexing time and are not re-checked on every commit.
 
 ### Related lists
 
