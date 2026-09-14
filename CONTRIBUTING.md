@@ -47,6 +47,33 @@ Rules for the sentence: say what is *structurally new*, not how well it scored.
       and cross-reference from the other.
 - [ ] Keep the list within a sub-area ordered by year, then alphabetically.
 
+## Automated verification
+
+Every pull request that touches `README.md` runs `scripts/verify_citations.py`,
+which resolves the identifiers in your changed entries against primary sources
+and posts the result as a comment.
+
+You can run it yourself before opening the PR:
+
+```bash
+python scripts/verify_citations.py --only YourModelName
+```
+
+It reports three levels:
+
+- **Failure** blocks the merge. An identifier resolved to a different paper, or a
+  linked repository does not exist.
+- **Warning** asks for review. An unusual venue, a large star drift, a duplicate.
+- **Info** is resolved metadata, printed so a reviewer can eyeball the fetched
+  title against the entry.
+
+A check that could not run (an API rate limit, a service outage) is reported as
+skipped, never as a failure. The tool never blocks a PR because it could not
+reach a server.
+
+It cannot check whether your one-sentence description of the contribution is
+accurate. That is still a human reading the paper.
+
 ## Star counts
 
 Star counts are indicative, refreshed periodically, and deliberately not

@@ -1,0 +1,89 @@
+name: Verify citations
+
+on:
+  pull_request:
+    paths: ['README.md']
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Verify everything, or only changed entries'
+        required: false
+        default: 'changed'
+        type: choice
+        options: [changed, all]
+  schedule:
+    # Full sweep on the 1st of each month, to catch link and venue rot.
+    - cron: '0 7 1 * *'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Collect changed README lines
+        id: changed
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff --unified=0 \
+            "origin/${{ github.base_ref }}...HEAD" -- README.md \
+            | grep -oP '^@@ -\d+(,\d+)? \+\K\d+(,\d+)?' \
+            | awk -F, '{ start=$1; count=($2==""?1:$2);
+                         for (i=0;i<count;i++) print start+i }' \
+            > changed_lines.txt || true
+          echo "count=$(wc -l < changed_lines.txt)" >> "$GITHUB_OUTPUT"
+          echo "Changed README lines: $(wc -l < changed_lines.txt)"
+
+      - name: Verify changed entries
+        id: verify_changed
+        if: github.event_name == 'pull_request' && steps.changed.outputs.count != '0'
+        env:
+          # Raises the GitHub API limit from 60/hr to 1000/hr, so repository
+          # checks are not skipped as rate limited.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python scripts/verify_citations.py \
+            --changed-lines changed_lines.txt \
+            --markdown --delay 3 > report.md
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat report.md
+
+      - name: Verify everything
+        id: verify_all
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python scripts/verify_citations.py --markdown --delay 3 > report.md
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat report.md
+
+      - name: Comment the report on the pull request
+        if: github.event_name == 'pull_request' && hashFiles('report.md') != ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: citation-verification
+          path: report.md
+
+      - name: Fail if any citation could not be substantiated
+        if: >-
+          steps.verify_changed.outputs.exit_code == '1' ||
+          steps.verify_all.outputs.exit_code == '1'
+        run: |
+          echo "::error::Citation verification found unsubstantiated entries."
+          echo "A failure means an identifier resolved to something other than"
+          echo "the cited work, or a linked repository does not exist."
+          echo "Rate-limited checks are reported as skipped, never as failures."
+          exit 1

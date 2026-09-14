@@ -55,6 +55,24 @@ Mark it, do not guess:
 Reporting "I could not verify these six" is a good outcome. Filling them in with
 confident-looking guesses is a failure, even if most turn out correct.
 
+## Check your work before proposing it
+
+Run the verifier on anything you add or change:
+
+```bash
+python scripts/verify_citations.py --only ModelName
+```
+
+It resolves arXiv identifiers and DOIs against primary sources and prints the
+real title it found. **Read that title.** If it does not describe the paper you
+think you are citing, the identifier is wrong — this is exactly the failure the
+music-generation example above describes, and the verifier catches it in one
+second.
+
+Do not propose an entry whose verification you have not run, and do not silence a
+failure by removing the check. If the tool reports a failure you believe is
+wrong, say so in the PR and explain why.
+
 ## Scope rules
 
 An entry belongs in this list only if **all** of these hold:
