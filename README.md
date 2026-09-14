@@ -393,3 +393,138 @@ anchors, NMS, loss, receptive field — has to be rebuilt around rotation.
   [`paper`](https://arxiv.org/abs/2305.02034) [`code`](https://github.com/ViTAE-Transformer/SAMRS) `NeurIPS'23` `segmentation pretraining` `385★`
 
 ---
+
+## Mamba & State-Space Models
+
+Remote sensing adopted Mamba faster than almost any other vision domain, for a
+concrete reason: a single satellite scene is enormous, and attention is quadratic
+in sequence length. Linear-complexity sequence modelling means you can process a
+whole VHR tile without cropping it into patches and stitching the seams back
+together.
+
+The recurring design problem is that Mamba is **causal and one-dimensional** while
+images are neither. Almost every architecture below is, at heart, a different
+answer to "in what order do we scan the pixels?"
+
+> Hyperspectral Mamba models are covered in [Hyperspectral](#hyperspectral),
+> where the spectral scan order is its own design axis.
+
+### Backbones & classification
+
+- **RSMamba** — Dynamic multi-path activation (forward, reverse and shuffled scan
+  paths) lets a causal SSM model non-causal 2D image tokens. The canonical entry
+  point for this family.
+  [`paper`](https://arxiv.org/abs/2403.19654) [`code`](https://github.com/KyanChen/RSMamba) `GRSL'24` `classification` `306★`
+- **CE-VSS** — Injects explicit contour and edge priors into the 2D selective scan
+  so the state-space backbone retains the object boundaries that pure sequential
+  scanning erodes.
+  [`paper`](https://ieeexplore.ieee.org/document/10810482) [`code`](https://github.com/yanliyue/Contour-enhanced-Visual-State-Space-Model) `TGRS'24` `classification` `7★`
+- **CMSI-Mamba** — Cross-modal Mamba interaction blocks align spatial and spectral
+  token streams before fusion, avoiding quadratic cross-attention.
+  [`paper`](https://ieeexplore.ieee.org/document/10829637) [`code`](https://github.com/ru-willow/CMSI-Mamba) `TGRS'25` `multimodal classification` `4★`
+
+### Dense prediction & segmentation
+
+- **RS³Mamba** — Dual-branch encoder where a visual state-space auxiliary branch
+  supplies global context to a CNN main branch, fused by a collaborative
+  completion module. First vision-Mamba segmenter for RS.
+  [`paper`](https://arxiv.org/abs/2404.02457) [`code`](https://github.com/sstary/SSRS) `GRSL'24` `segmentation` `806★`
+- **RS-Mamba** — An omnidirectional selective scan lets a linear-complexity SSM
+  ingest entire large VHR images without cropping, which is the whole practical
+  argument for Mamba in this field.
+  [`paper`](https://arxiv.org/abs/2404.02668) [`code`](https://github.com/walking-shadow/Official_Remote_Sensing_Mamba) `TGRS'24` `segmentation, dense prediction` `348★`
+- **PPMamba** — Pyramid-pooling CNN branch interleaved with 2D selective scan
+  blocks to recover local detail at multiple scales.
+  [`paper`](https://ieeexplore.ieee.org/document/10769411) [`code`](https://github.com/Jerrymo59/PPMambaSeg) `TGRS'24` `segmentation` `2★`
+- **CM-UNet** — CNN encoder with a CSMamba decoder block and multi-scale attention
+  fusion, giving UNet a linear-cost global decoder.
+  [`paper`](https://arxiv.org/abs/2405.10530) [`code`](https://github.com/XiaoBuL/CM-UNet) `preprint` `segmentation` `214★`
+- **Samba** — Samba-block encoder with a UperNet decoder; the first SSM
+  encoder-decoder benchmark for RS segmentation. ⚠ `Heliyon`
+  [`paper`](https://doi.org/10.1016/j.heliyon.2024.e38495) [`code`](https://github.com/zhuqinfeng1999/Samba) `2024` `segmentation` `159★`
+- **RSMTMamba** — Mamba-based cross-task feature learning in a shared-encoder
+  design for joint segmentation, height estimation and boundary detection.
+  [`paper`](https://ieeexplore.ieee.org/document/10879310) [`code`](https://github.com/sycs-2024/RSMultitaskMamba) `TGRS'25` `multi-task` `3★`
+
+### Change detection
+
+- **ChangeMamba** — VMamba encoder plus three spatio-temporal relation mechanisms
+  (sequential, cross and parallel scan) covering binary CD, semantic CD and
+  building damage assessment in one framework. ESI Highly Cited.
+  [`paper`](https://arxiv.org/abs/2404.03425) [`code`](https://github.com/ChenHongruixuan/ChangeMamba) `TGRS'24` `change detection` `644★`
+- **MF-Mamba** — Multi-level SSM fusion aggregating state representations across
+  encoder stages rather than only at the bottleneck.
+  [`paper`](https://ieeexplore.ieee.org/document/10756674) [`code`](https://github.com/121zzy/MF-Mamba) `TGRS'24` `change detection` `5★`
+- **RSCaMa** — Stacked layers combining a spatial-difference SSM with a
+  temporal-traversing SSM that scans bi-temporal features cross-wise, for change
+  *captioning*.
+  [`paper`](https://arxiv.org/abs/2404.18895) [`code`](https://github.com/Chen-Yang-Liu/RSCaMa) `GRSL'24` `change captioning` `81★`
+- **LCCDMamba** — Visual state-space encoder with a land-cover-aware difference
+  aggregation decoder tuned for VHR land-cover transitions.
+  [`paper`](https://ieeexplore.ieee.org/document/10845192) [`code`](https://github.com/juncyan/lccdmamba) `JSTARS'25` `land-cover CD` `3★`
+- **CDMamba** — A scaled residual ConvMamba block recovers the fine local detail
+  Mamba discards, plus adaptive global-local guided fusion for bi-temporal
+  interaction.
+  [`paper`](https://arxiv.org/abs/2406.04207) [`code`](https://github.com/zmoka-zht/CDMamba) `TGRS'25` `change detection` `116★`
+
+### Fusion, super-resolution & detection
+
+- **FusionMamba** — Extends the single-input Mamba block into a plug-and-play
+  *dual-input* block for arbitrary two-source fusion, covering pansharpening and
+  hyperspectral-multispectral fusion.
+  [`paper`](https://arxiv.org/abs/2404.07932) [`code`](https://github.com/PSRben/FusionMamba) `TGRS'24` `pansharpening, fusion` `139★`
+- **SDMSPan** — Detail-branch supervision guides a multi-scale SSM so
+  high-frequency panchromatic detail is explicitly injected rather than implicitly
+  learned.
+  [`paper`](https://ieeexplore.ieee.org/document/10812822) [`code`](https://github.com/zhaomengjiao123/SDMSPan) `TGRS'24` `pansharpening` `1★`
+- **MiM-ISTD** — Nested outer/inner Mamba over patches and sub-patches, making
+  large-image infrared small-target detection viable at a fraction of transformer
+  GPU cost.
+  [`paper`](https://ieeexplore.ieee.org/document/10740056) [`code`](https://github.com/txchen-USTC/MiM-ISTD) `TGRS'24` `infrared detection` `179★`
+- **TrackingMamba** — Single-stream visual state-space tracking backbone replacing
+  transformer relation modelling for satellite video.
+  [`paper`](https://ieeexplore.ieee.org/document/10678881) [`code`](https://github.com/KustTeamWQW/TrackingMamba) `JSTARS'24` `video tracking` `27★`
+- **FMambaIR** — Couples SSM spatial modelling with an explicit frequency-domain
+  branch to restore both structure and texture.
+  [`paper`](https://ieeexplore.ieee.org/document/10834441) [`code`](https://github.com/mickoluan/FMambaIR) `TGRS'25` `restoration, dehazing` `23★`
+- **Pan-Mamba** — Channel-swapping Mamba for cheap cross-modal exchange plus
+  cross-modal Mamba for PAN/MS relation modelling. The canonical Mamba
+  pansharpening paper. ⚠ `Information Fusion`
+  [`paper`](https://arxiv.org/abs/2402.12192) [`code`](https://github.com/alexhe101/Pan-Mamba) `2025` `pansharpening` `140★`
+- **FreMamba** — Frequency selection, vision state-space and hybrid gate modules;
+  the first Mamba for RS super-resolution, beating HAT-L at ~28% of its memory.
+  ⚠ `IEEE TMM`
+  [`paper`](https://arxiv.org/abs/2405.04964) [`code`](https://github.com/XY-boy/FreMamba) `2024` `super-resolution` `99★`
+
+### Mamba foundation models
+
+- **RoMA** — Auto-regressive Mamba pretraining with rotation-aware adaptive
+  cropping, angular embeddings and multi-scale token prediction; beats ViT-based
+  RSFMs while cutting GPU memory roughly 80% on high-resolution data.
+  [`paper`](https://arxiv.org/abs/2503.10392) [`code`](https://github.com/MiliLab/RoMA) `NeurIPS'25` `foundation model` `135★`
+- **SatMamba** — Masked autoencoder whose encoder *and* decoder are multi-way
+  Mamba blocks rather than transformer blocks, giving linear scaling in sequence
+  length.
+  [`paper`](https://arxiv.org/abs/2502.00435) [`code`](https://github.com/mdchuc/HRSFM) `preprint` `foundation model` `4★`
+
+---
+
+## Efficient Architectures
+
+Attention and state-space models are not the only options. This section collects
+architectures whose primary contribution is a different **cost** profile.
+
+- **RS-vHeat** — Replaces attention with a heat conduction operator (O(N^1.5) with
+  a global receptive field) guided by object structure, pretrained via
+  frequency-domain hierarchical masking. 84% less memory and 2.7× throughput
+  versus attention-based RSFMs.
+  [`paper`](https://arxiv.org/abs/2411.17984) [`code`](https://github.com/iecashhy/RS-vHeat) `ICCV'25` `foundation model, efficient` `16★`
+- **DeepKANSeg** — A DeepKAN refinement module and global-local decoder built from
+  Kolmogorov-Arnold linear layers, decomposing high-dimensional features into
+  univariate learnable transforms.
+  [`paper`](https://arxiv.org/abs/2501.07390) [`code`](https://github.com/sstary/SSRS) `TGRS'26` `segmentation, KAN` `806★`
+- **RSRWKV** — 2D-WKV scanning in four directions removes RWKV's one-dimensional
+  anisotropy, plus multi-view convolutional shift and efficient channel attention.
+  [`paper`](https://arxiv.org/abs/2503.20382) `2025` `linear attention` `no code`
+
+---
