@@ -169,13 +169,43 @@ def parse_entries(text):
     return [e for e in entries if e.paper_url or e.code_urls]
 
 
-def check_arxiv(arxiv_id):
-    """Return (title, journal_ref, status).
+CITATION_TITLE_RE = re.compile(
+    br'<meta name="citation_title" content="([^"]+)"')
 
-    status is 'ok', 'missing' (the API answered and knows no such paper) or
-    'unchecked' (rate limited or unreachable). Only 'missing' is evidence of a
-    bad identifier.
-    """
+
+def _arxiv_from_html(arxiv_id):
+    """Resolve via the arXiv abstract page. A 404 here is definitive."""
+    raw, err = fetch("https://arxiv.org/abs/%s" % arxiv_id)
+    if raw:
+        m = CITATION_TITLE_RE.search(raw)
+        if m:
+            title = " ".join(m.group(1).decode("utf-8", "replace").split())
+            return title, None, "ok"
+        return None, None, "unchecked"
+    if err == 404:
+        return None, None, "missing"
+    return None, None, "unchecked"
+
+
+def _arxiv_from_datacite(arxiv_id):
+    """Resolve via the DataCite DOI arXiv registers for every submission."""
+    raw, err = fetch(
+        "https://api.datacite.org/dois/10.48550%%2FarXiv.%s" % arxiv_id,
+        accept="application/json")
+    if raw:
+        try:
+            attrs = json.loads(raw)["data"]["attributes"]
+            title = " ".join(attrs["titles"][0]["title"].split())
+            return title, None, "ok"
+        except Exception:
+            return None, None, "unchecked"
+    if err == 404:
+        return None, None, "missing"
+    return None, None, "unchecked"
+
+
+def _arxiv_from_api(arxiv_id):
+    """Resolve via the arXiv Atom API. Also yields the journal reference."""
     raw, err = fetch(
         "https://export.arxiv.org/api/query?id_list=%s&max_results=1" % arxiv_id)
     if not raw:
@@ -197,6 +227,28 @@ def check_arxiv(arxiv_id):
     jr = entry.find("arxiv:journal_ref", ns)
     jref = " ".join(jr.text.split()) if jr is not None and jr.text else None
     return title, jref, "ok"
+
+
+def check_arxiv(arxiv_id):
+    """Return (title, journal_ref, status) using whichever source answers.
+
+    Three independent sources are tried because no single one is dependable
+    from a shared CI address: the arXiv API in particular rate-limits cloud
+    runners hard enough that it answered nothing at all on the first real run
+    of this workflow, which let a fabricated identifier pass as merely
+    unchecked.
+
+    'missing' means a source positively denied the identifier. 'unchecked'
+    means nobody answered, which is never treated as success.
+    """
+    saw_missing = False
+    for resolver in (_arxiv_from_html, _arxiv_from_datacite, _arxiv_from_api):
+        title, jref, status = resolver(arxiv_id)
+        if status == "ok":
+            return title, jref, "ok"
+        if status == "missing":
+            saw_missing = True
+    return None, None, "missing" if saw_missing else "unchecked"
 
 
 def check_crossref(doi):
@@ -279,9 +331,9 @@ def verify(entries, check_stars=True, delay=1.0):
                 findings.append(Finding("fail", label,
                     "arXiv id %s does not exist" % am.group("id")))
             elif status == "unchecked":
-                findings.append(Finding("info", label,
-                    "arXiv id %s not checked (API rate limited or unreachable)"
-                    % am.group("id")))
+                findings.append(Finding("unchecked", label,
+                    "arXiv id %s could not be resolved by any source - "
+                    "this entry was NOT verified" % am.group("id")))
             else:
                 findings.append(Finding("info", label, "arXiv title: " + title))
                 short = norm(e.name).split()[0] if norm(e.name) else ""
@@ -369,11 +421,21 @@ def main():
     fails = [f for f in findings if f.level == "fail"]
     warns = [f for f in findings if f.level == "warn"]
     infos = [f for f in findings if f.level == "info"]
+    unchecked = [f for f in findings if f.level == "unchecked"]
 
     if args.markdown:
         print("## Citation verification\n")
-        print("Checked **%d** entries: **%d** failures, **%d** warnings.\n"
-              % (len(entries), len(fails), len(warns)))
+        print("Checked **%d** entries: **%d** failures, **%d** warnings, "
+              "**%d** not verified.\n"
+              % (len(entries), len(fails), len(warns), len(unchecked)))
+        if unchecked:
+            print("### Not verified\n")
+            print("No source could confirm these identifiers, so this run "
+                  "proves nothing about them. Do not merge on the strength of "
+                  "a green check here.\n")
+            for f in unchecked:
+                print("- **%s** - %s" % (f.entry, f.message))
+            print("")
         if fails:
             print("### Failures (must fix)\n")
             for f in fails:
@@ -390,16 +452,21 @@ def main():
                 print("- **%s** - %s" % (f.entry, f.message))
             print("\n</details>")
     else:
+        for f in unchecked:
+            print("UNVERIFIED  %s: %s" % (f.entry, f.message))
         for f in fails:
             print("FAIL  %s: %s" % (f.entry, f.message))
         for f in warns:
             print("WARN  %s: %s" % (f.entry, f.message))
         for f in infos:
             print("info  %s: %s" % (f.entry, f.message))
-        print("\n%d entries | %d failures | %d warnings"
-              % (len(entries), len(fails), len(warns)))
+        print("\n%d entries | %d failures | %d warnings | %d not verified"
+              % (len(entries), len(fails), len(warns), len(unchecked)))
 
-    return 1 if fails else 0
+    # An entry nobody could confirm is not a pass. Reporting it as one is how a
+    # verification step becomes false assurance, which is worse than having no
+    # verification step at all.
+    return 1 if (fails or unchecked) else 0
 
 
 if __name__ == "__main__":

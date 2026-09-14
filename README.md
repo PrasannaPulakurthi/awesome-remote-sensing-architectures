@@ -774,6 +774,9 @@ unevenly-spaced temporal axis without pretending it is a video.
 - **Exchanger** — Reformulates SITS processing as set prediction rather than
   sequence modelling, targeting irregular acquisition times directly.
   [`paper`](https://arxiv.org/abs/2305.02086) `preprint` `segmentation, crop mapping`
+- **TSViT** — Factorised spatiotemporal attention over temporally-ordered patch
+  tokens, with acquisition-time positional encoding rather than index position.
+  [`paper`](https://arxiv.org/abs/2301.04944) `preprint` `segmentation, crop mapping`
 
 Time-series capability also appears in several models listed elsewhere:
 
@@ -912,9 +915,6 @@ Contributions toward them are especially welcome.
 list, held back only because their venue could not be confirmed against a primary
 source during indexing:
 
-- **TSViT** (*ViTs for SITS: Vision Transformers for Satellite Image Time Series*)
-  — arXiv identifier and title confirmed; venue not stated on arXiv and the
-  proceedings page was unreachable.
 - **SAR2SAR** — JSTARS confirmed, but the publication year is ambiguous between
   early access and volume year, which matters against the 2021 cutoff.
 - **Presto** and **TESSERA** — pixel-timeseries models with released weights;
