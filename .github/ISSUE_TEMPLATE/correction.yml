@@ -1,0 +1,25 @@
+name: Report a correction
+description: Wrong venue, wrong year, dead link, or mis-described contribution
+title: "[Fix] <what is wrong>"
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: Citation accuracy matters more here than coverage. Thank you for this.
+  - type: input
+    id: entry
+    attributes:
+      label: Which entry
+    validations: {required: true}
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type of error
+      options: [Wrong venue, Wrong year, Dead or wrong link, Mis-described contribution, Duplicate entry, Other]
+    validations: {required: true}
+  - type: textarea
+    id: correct
+    attributes:
+      label: What it should say, and your source
+      description: Please link a primary source (publisher page, proceedings, arXiv).
+    validations: {required: true}

@@ -1,0 +1,65 @@
+name: Add a paper
+description: Suggest an architecture for the list
+title: "[Add] <Model Name>"
+labels: ["new-entry"]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Model / short name
+      placeholder: SpectralFormer
+    validations: {required: true}
+  - type: input
+    id: title
+    attributes:
+      label: Full paper title
+    validations: {required: true}
+  - type: input
+    id: venue
+    attributes:
+      label: Venue and year
+      description: Must be a venue listed in the README. Verify from a primary source.
+      placeholder: IEEE TGRS 2022
+    validations: {required: true}
+  - type: input
+    id: paper
+    attributes:
+      label: Paper URL (arXiv or DOI)
+    validations: {required: true}
+  - type: input
+    id: code
+    attributes:
+      label: Code URL
+      description: Leave blank if none. Entries without code are accepted only if foundational.
+  - type: dropdown
+    id: family
+    attributes:
+      label: Architecture family
+      options:
+        - Vision Transformer
+        - CNN / large-kernel
+        - Mamba / state-space
+        - Diffusion / generative
+        - Foundation model / SSL
+        - Vision-language / MLLM
+        - Efficient (KAN, RWKV, linear attention)
+        - Neural fields / 3D
+        - Other
+    validations: {required: true}
+  - type: textarea
+    id: contribution
+    attributes:
+      label: Architectural contribution
+      description: One sentence on what is structurally new. Not the benchmark numbers.
+    validations: {required: true}
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: Published 2021 or later
+          required: true
+        - label: I verified the venue from a primary source
+          required: true
+        - label: The paper contributes an architecture, not only an application
+          required: true
