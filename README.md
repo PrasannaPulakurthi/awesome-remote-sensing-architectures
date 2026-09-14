@@ -695,3 +695,169 @@ Practical guidance:
   before concluding anything. It frequently does not.
 
 ---
+
+## Vision-Language Models & Multimodal LLMs
+
+> **Partial section.** See [Coverage status](#coverage-status) — entries here are
+> verified, but this family is under-covered relative to its current activity.
+
+- **GeoChat** — The first grounded large vision-language model for remote sensing,
+  supporting region-level grounding, referring detection and visually grounded
+  conversation rather than whole-image captioning alone.
+  [`paper`](https://openaccess.thecvf.com/content/CVPR2024/html/Kuckreja_GeoChat_Grounded_Large_Vision-Language_Model_for_Remote_Sensing_CVPR_2024_paper.html) [`code`](https://github.com/mbzuai-oryx/GeoChat) `CVPR'24` `MLLM, grounding`
+- **EarthGPT** — Universal multimodal LLM for multi-sensor comprehension, spanning
+  optical, SAR and infrared in a single instruction-following model.
+  [`paper`](https://ieeexplore.ieee.org/document/10547418) `TGRS'24` `MLLM, multi-sensor`
+- **LHRS-Bot** — Uses volunteered geographic information (OpenStreetMap) paired with
+  imagery to build instruction data at scale, rather than relying on human
+  annotation.
+  [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24` `MLLM, instruction tuning`
+- **RSGPT** — Remote sensing vision-language model released alongside a
+  human-annotated captioning and VQA benchmark.
+  [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25` `MLLM, captioning, VQA`
+- **RMSIN** — Intra-scale and cross-scale interaction with adaptive rotated
+  convolution for *referring* segmentation, where the query is free text. Introduces
+  the RRSIS-D benchmark.
+  [`paper`](https://arxiv.org/abs/2312.12470) [`code`](https://github.com/Lsan2401/RMSIN) `CVPR'24` `referring segmentation`
+- **RSPrompter** — Learns category-aware prompts that drive a frozen SAM decoder,
+  converting an interactive foundation model into an automatic instance segmenter.
+  [`paper`](https://arxiv.org/abs/2306.16269) [`code`](https://github.com/KyanChen/RSPrompter) `TGRS'24` `instance segmentation, SAM`
+- **AnyChange** — Training-free bi-temporal latent matching in SAM's latent space,
+  giving zero-shot change detection with no change-detection training at all.
+  [`paper`](https://arxiv.org/abs/2402.01188) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `NeurIPS'24` `zero-shot CD, SAM`
+- **BAN** — Freezes a CLIP or SAM backbone and bridges it to any existing change
+  detection head through a bi-temporal adapter, with few trainable parameters.
+  [`paper`](https://arxiv.org/abs/2312.01163) [`code`](https://github.com/likyoo/BAN) `TGRS'24` `change detection, PEFT`
+- **RSCaMa** — State-space model for change *captioning*, combining a
+  spatial-difference SSM with a temporal-traversing SSM.
+  [`paper`](https://arxiv.org/abs/2404.18895) [`code`](https://github.com/Chen-Yang-Liu/RSCaMa) `GRSL'24` `change captioning`
+
+---
+
+## Diffusion & Generative Models
+
+> **Partial section.** See [Coverage status](#coverage-status).
+
+- **DiffusionSat** — Conditions generation on numerical satellite metadata
+  (location, GSD, timestamp) alongside text, with conditioning modules trainable
+  for super-resolution, inpainting and temporal generation.
+  [`paper`](https://proceedings.iclr.cc/paper_files/paper/2024/file/16c3c941409d0581286eff49b180930f-Paper-Conference.pdf) [`code`](https://github.com/samar-khanna/DiffusionSat) `ICLR'24` `generation, super-resolution`
+- **CRS-Diff** — Supports text, metadata and image conditioning simultaneously,
+  giving ControlNet-style fine-grained control over remote sensing generation.
+  [`paper`](https://arxiv.org/abs/2403.11614) [`code`](https://github.com/Sonettoo/CRS-Diff) `preprint` `controllable generation`
+- **MetaEarth** — Resolution-conditioned generative model aimed at global-scale
+  image generation across zoom levels rather than single-tile synthesis.
+  [`paper`](https://arxiv.org/abs/2405.13570) `preprint` `generation`
+- **Changen2** — Generative change process model that synthesises labelled
+  multi-temporal sequences, producing pretrained weights with zero-shot change
+  detection capability. Cross-listed from
+  [Vision Transformers](#change-detection).
+  [`paper`](https://arxiv.org/abs/2406.17998) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `TPAMI'24` `generative CD`
+- **TerraMind** — Any-to-any generative multimodal model that synthesises missing
+  modalities as an intermediate reasoning step. Cross-listed from
+  [Foundation Models](#multi-modal-foundation-models).
+  [`paper`](https://arxiv.org/abs/2504.11171) [`code`](https://github.com/IBM/terramind) `ICCV'25` `generative, multimodal`
+
+---
+
+## Libraries & Tooling
+
+Frameworks that make the models above practical to train, fine-tune and deploy.
+Star counts are deliberately omitted here pending verification.
+
+| Library | What it is |
+|---|---|
+| [TorchGeo](https://github.com/microsoft/torchgeo) | PyTorch datasets, samplers, transforms and pretrained weights for geospatial data. The most common starting point. |
+| [TerraTorch](https://github.com/IBM/terratorch) | IBM's fine-tuning toolkit for geospatial foundation models; the reference path for Prithvi and TerraMind. |
+| [Raster Vision](https://github.com/azavea/raster-vision) | End-to-end pipeline framework for chipping, training and prediction on large rasters. |
+| [GeoSeg](https://github.com/WangLibo1995/GeoSeg) | Segmentation model zoo built around UNetFormer and DC-Swin; a de-facto RS segmentation baseline suite. |
+| [Open-CD](https://github.com/likyoo/open-cd) | Change detection toolbox on MMSegmentation, home of Changer and BAN. |
+| [torchange](https://github.com/Z-Zheng/pytorch-change-models) | Change model library covering ChangeStar, Changen2 and AnyChange. |
+| [MMRotate](https://github.com/open-mmlab/mmrotate) | OpenMMLab toolbox for rotated object detection; most oriented detectors here ship as MMRotate configs. |
+| [segment-geospatial](https://github.com/opengeos/segment-geospatial) | SAM applied to geospatial rasters with a practical, notebook-friendly API. |
+| [eo-learn](https://github.com/sentinel-hub/eo-learn) | Earth observation workflow framework bridging satellite archives and ML pipelines. |
+| [DeepForest](https://github.com/weecology/DeepForest) | Tree crown detection from airborne imagery, with pretrained ecological models. |
+| [GEO-Bench](https://github.com/ServiceNow/geo-bench) | Standardised foundation model evaluation suite. |
+| [PANGAEA](https://github.com/VMarsocci/pangaea-bench) | Geographically inclusive GFM benchmark across 7 task types. |
+
+---
+
+## Task Index
+
+The list is organised by architecture family. This maps back the other way.
+
+| Task | Where to look |
+|---|---|
+| **Scene classification** | [Mamba backbones](#backbones--classification) · [MIM pretraining](#masked-image-modeling) · [HSI classification](#transformers-for-hsi-classification) |
+| **Semantic segmentation** | [ViT segmentation](#semantic-segmentation) · [Mamba dense prediction](#dense-prediction--segmentation) · [DeepKANSeg](#efficient-architectures) |
+| **Change detection** | [ViT change detection](#change-detection) · [Mamba change detection](#change-detection-1) · [AnyChange / BAN](#vision-language-models--multimodal-llms) |
+| **Object detection (oriented)** | [Oriented object detection](#oriented-object-detection) |
+| **Instance segmentation** | [RSPrompter](#semantic-segmentation) · [SAMRS](#segmentation-datasets-generated-by-foundation-models) |
+| **Super-resolution** | [FreMamba](#fusion-super-resolution--detection) · [DiffusionSat](#diffusion--generative-models) |
+| **Pansharpening / fusion** | [FusionMamba, Pan-Mamba, SDMSPan](#fusion-super-resolution--detection) · [HSI fusion](#fusion-detection-denoising--restoration) |
+| **Image generation** | [Diffusion & generative](#diffusion--generative-models) |
+| **Captioning / VQA / chat** | [Vision-language models](#vision-language-models--multimodal-llms) |
+| **Referring segmentation** | [RMSIN](#vision-language-models--multimodal-llms) |
+| **Hyperspectral (all tasks)** | [Hyperspectral](#hyperspectral) |
+| **SAR** | [SARATR-X](#agency--open-release-models) · [SARDet-100K](#oriented-object-detection) · [CROMA](#contrastive--geo-aware-self-supervision) |
+| **Denoising / restoration** | [SSUMamba](#fusion-detection-denoising--restoration) · [FMambaIR](#fusion-super-resolution--detection) |
+| **Target / small object detection** | [MiM-ISTD](#fusion-super-resolution--detection) · [HTD-Mamba](#fusion-detection-denoising--restoration) |
+| **Tracking** | [TrackingMamba](#fusion-super-resolution--detection) |
+| **Multi-task** | [MTP](#plain-vit-backbones--parameter-scaling) · [RSMTMamba](#dense-prediction--segmentation) |
+
+---
+
+## Coverage status
+
+This list is under active construction. Being explicit about what is and is not
+covered is more useful than implying uniform depth.
+
+| Section | Status |
+|---|---|
+| Foundation models & SSL | **Complete** — venues and code links verified |
+| Vision transformers | **Complete** — venues and code links verified |
+| Mamba & state-space | **Complete** — venues and code links verified |
+| Hyperspectral | **Complete** — the deepest section, with dataset guidance |
+| Efficient architectures | **Complete** |
+| Vision-language models | **Partial** — verified entries only; many recent models not yet indexed |
+| Diffusion & generative | **Partial** — verified entries only |
+| SAR | **Planned** — currently only cross-references; despeckling, ATR and InSAR missing |
+| 3D, LiDAR & neural fields | **Planned** — Sat-NeRF, Gaussian splatting, height estimation missing |
+| Satellite image time series | **Planned** — U-TAE, TSViT, Presto and crop mapping missing |
+| Surveys | **Planned** |
+| Benchmarks & datasets | **Partial** — hyperspectral only; segmentation, CD, detection and SITS benchmarks missing |
+
+Planned sections are genuinely absent rather than thin — they are not yet
+researched to the verification standard the rest of the list meets. Contributions
+toward them are especially welcome.
+
+### On verification
+
+Every venue in the completed sections was checked against a primary source
+(publisher page, proceedings listing, or the arXiv comments field), and every code
+link was confirmed to resolve. Star counts were captured at indexing time and
+drift; treat them as indicative.
+
+Where a venue could not be confirmed, the entry is marked `preprint` rather than
+given a plausible-looking guess. A wrong citation in a list like this propagates
+into other people's bibliographies, so absence is preferred to invention.
+
+### Related lists
+
+This list is deliberately narrow — architectures, recent, top venues. These cover
+adjacent ground well:
+
+- [satellite-image-deep-learning/techniques](https://github.com/satellite-image-deep-learning/techniques) — the broadest applied catalogue of techniques and tooling.
+- [satellite-image-deep-learning/datasets](https://github.com/satellite-image-deep-learning/datasets) — the exhaustive dataset catalogue.
+- [awesome-remote-sensing-change-detection](https://github.com/wenhwu/awesome-remote-sensing-change-detection) — deep coverage of change detection specifically.
+- [Awesome-Mamba-in-Remote-Sensing](https://github.com/BaoBao0926/Awesome-Mamba-in-Remote-Sensing) — companion to the Vision Mamba in RS survey.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Corrections to venues, years, links and
+attributions are the most valuable contribution — please open an issue or PR.
+
+## License
+
+[CC0-1.0](LICENSE). The curation is public domain; linked papers, datasets and
+code remain under their own licences.
