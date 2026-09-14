@@ -774,6 +774,12 @@ unevenly-spaced temporal axis without pretending it is a video.
 - **Exchanger** — Reformulates SITS processing as set prediction rather than
   sequence modelling, targeting irregular acquisition times directly.
   [`paper`](https://arxiv.org/abs/2305.02086) `preprint` `segmentation, crop mapping`
+- **TSViT** — Factorised spatiotemporal attention over temporally-ordered patch
+  tokens, with acquisition-time positional encoding rather than index position.
+  [`paper`](https://arxiv.org/abs/2301.04944) `preprint` `segmentation, crop mapping`
+- **NotARealModel** — Deliberately broken entry used to prove the verification
+  gate fires. This must never be merged.
+  [`paper`](https://arxiv.org/abs/2301.99999) `preprint` `test`
 
 Time-series capability also appears in several models listed elsewhere:
 
