@@ -62,7 +62,9 @@ jobs:
         if: steps.verify.outputs.exit_code == '1'
         run: |
           echo "::error::Citation verification found unsubstantiated entries."
-          echo "A failure means an identifier resolved to something other than"
-          echo "the cited work, or a linked repository does not exist."
-          echo "Rate-limited checks are reported as skipped, never as failures."
+          echo "This means one of:"
+          echo "  - an identifier does not exist, or resolves to a different work"
+          echo "  - a linked repository does not exist"
+          echo "  - no source could confirm an identifier, so it was not verified"
+          echo "See the report comment on the pull request for which entries."
           exit 1
