@@ -528,3 +528,170 @@ architectures whose primary contribution is a different **cost** profile.
   [`paper`](https://arxiv.org/abs/2503.20382) `2025` `linear attention` `no code`
 
 ---
+
+## Hyperspectral
+
+The deepest section in this list. Hyperspectral imaging has its own architectural
+logic: the spectral axis is a *sequence* with physical meaning, bands are
+correlated and redundant, and labelled pixels are scarce and spatially clustered.
+Architectures that ignore this and treat an HSI cube as a 200-channel RGB image
+tend to score well on the classic benchmarks and generalise poorly — see the
+[methodological note](#a-note-on-hsi-benchmarking) below, which matters more than
+any individual entry here.
+
+### Transformers for HSI classification
+
+- **SpectralFormer** — Group-wise spectral embedding over adjacent band groups plus
+  cross-layer adaptive fusion, treating the spectrum itself as the transformer's
+  sequence dimension. The reference HSI transformer.
+  [`paper`](https://doi.org/10.1109/TGRS.2021.3130716) [`code`](https://github.com/danfenghong/IEEE_TGRS_SpectralFormer) `TGRS'22` `classification` `338★`
+- **SSFTT** — A 3D/2D CNN shallow spectral-spatial extractor feeds a
+  Gaussian-weighted feature tokenizer into a transformer encoder. The most-copied
+  hybrid CNN-transformer HSI baseline.
+  [`paper`](https://ieeexplore.ieee.org/document/9684381) [`code`](https://github.com/zgr6010/HSI_SSFTT) `TGRS'22` `classification` `137★`
+- **morphFormer** — Injects learnable spectral and spatial morphological
+  (erosion/dilation) operations into the attention block to capture shape and
+  structure cues that plain attention misses.
+  [`paper`](https://doi.org/10.1109/TGRS.2023.3242346) [`code`](https://github.com/mhaut/morphFormer) `TGRS'23` `classification` `46★`
+- **SSTFormer** — Extends spectral-spatial tokenization with a temporal transformer
+  branch for bi-temporal hyperspectral change detection.
+  [`paper`](https://doi.org/10.1109/TGRS.2022.3203075) [`code`](https://github.com/yanhengwang-heu/IEEE_TGRS_SSTFormer) `TGRS'22` `change detection` `37★`
+
+### State-space models for HSI
+
+Mamba's linear scaling is a natural fit for long spectral sequences, and the
+scan-order question becomes genuinely two-dimensional here: you are choosing an
+order across *space* and across *wavelength* simultaneously.
+
+- **MambaHSI** — The first *image-level* rather than patch-level Mamba HSI
+  classifier, with separate spatial and spectral Mamba blocks and an adaptive
+  spatial-spectral fusion module. The canonical HSI-Mamba paper.
+  [`paper`](https://ieeexplore.ieee.org/document/10604894) [`code`](https://github.com/li-yapeng/MambaHSI) `TGRS'24` `classification` `165★`
+- **3DSS-Mamba** — Pixel-wise 3D selective scanning across spectral *and* spatial
+  axes, operating on tokens from a spectral-spatial token generator.
+  [`paper`](https://arxiv.org/abs/2405.12487) [`code`](https://github.com/IIP-Team/3DSS-Mamba) `TGRS'24` `classification` `18★`
+- **IGroupSS-Mamba** — Interval grouping of spectral bands with group-wise
+  multi-directional scanning, cutting the redundancy of scanning all bands jointly.
+  [`paper`](https://arxiv.org/abs/2410.05100) [`code`](https://github.com/IIP-Team/IGroupSS-Mamba) `TGRS'24` `classification` `23★`
+- **HyperMamba** — Spectral-adaptive state transition conditioning the SSM
+  parameters on local spectral statistics.
+  [`paper`](https://ieeexplore.ieee.org/document/10720896) [`code`](https://github.com/chiangliu/HyperMamba) `TGRS'24` `classification` `39★`
+- **GraphMamba** — Learns a graph over superpixel nodes and orders the Mamba scan
+  along graph structure rather than a raster path.
+  [`paper`](https://ieeexplore.ieee.org/document/10746459) [`code`](https://github.com/ahappyyang/GraphMamba) `TGRS'24` `classification` `36★`
+- **MambaLG** — Local-global dual-scan coupling a local patch scan with a global
+  scene scan in one state-space encoder.
+  [`paper`](https://ieeexplore.ieee.org/document/10812905) [`code`](https://github.com/danfenghong/IEEE_TGRS_MambaLG) `TGRS'24` `classification` `57★`
+- **DualMamba** — Parallel lightweight Mamba and convolution branches with dynamic
+  gated fusion, for a very small parameter budget.
+  [`paper`](https://ieeexplore.ieee.org/document/10798573) `TGRS'24` `classification, lightweight` `no code`
+- **S²Mamba** — Two parallel selective scans — patch-cross-scan for space,
+  bi-directional scan for spectrum — merged by a learnable spatial-spectral mixture
+  gate.
+  [`paper`](https://ieeexplore.ieee.org/document/10844849) [`code`](https://github.com/PURE-melo/S2Mamba) `TGRS'25` `classification` `64★`
+- **STMamba** — Replaces raster patches with learned semantic tokens before
+  state-space modelling, shortening the sequence the SSM has to traverse.
+  [`paper`](https://ieeexplore.ieee.org/document/10838328) [`code`](https://github.com/AlanLowell/STMamba) `JSTARS'25` `classification` `5★`
+- **MambaHSI+** — Simplifies MambaHSI into a multidirectional state-propagation
+  scheme with higher accuracy at lower cost.
+  [`paper`](https://ieeexplore.ieee.org/document/11023867) [`code`](https://github.com/RockAilab/MambaHSI_Plus) `TGRS'25` `classification, efficient` `19★`
+
+### Hyperspectral foundation models
+
+The most consequential recent shift. Until 2023 there was no meaningful pretraining
+story for HSI — everything was trained from scratch on a few hundred labelled
+pixels. These models change what the starting point looks like.
+
+- **SpectralGPT** — 3D spatial-spectral token generation with multi-target
+  reconstruction; over 600M parameters trained on ~1M spectral images. The first
+  large spectral-native foundation model.
+  [`paper`](https://arxiv.org/abs/2311.07113) [`code`](https://github.com/danfenghong/IEEE_TPAMI_SpectralGPT) `TPAMI'24` `foundation model` `282★`
+- **HyperSIGMA** — First billion-parameter HSI foundation model, with separate
+  spatial and spectral MAEs and sparse sampling attention to counter
+  spatial-spectral redundancy. Evaluated across 16 datasets and 7 tasks.
+  [`paper`](https://arxiv.org/abs/2406.11519) [`code`](https://github.com/WHU-Sigma/HyperSIGMA) `TPAMI'25` `foundation model` `390★`
+- **DOFA** — Not HSI-specific, but its wavelength-conditioned hypernetwork accepts
+  hyperspectral input directly alongside other sensors, which makes it a useful
+  cross-sensor baseline. See [Foundation Models](#multi-modal-foundation-models).
+  [`paper`](https://arxiv.org/abs/2403.15356) [`code`](https://github.com/zhu-xlab/DOFA) `preprint` `multimodal` `213★`
+
+### Fusion, detection, denoising & restoration
+
+- **SSUMamba** — Alternating spatial-spectral continuous scanning inside a U-shaped
+  SSM so noise modelling sees full 3D context at linear cost.
+  [`paper`](https://arxiv.org/abs/2405.01726) [`code`](https://github.com/lronkitty/SSUMamba) `TGRS'24` `denoising` `57★`
+- **HLMamba** — Dual-stream Mamba with a cross-modal state-space fusion block
+  bridging HSI spectra and LiDAR elevation.
+  [`paper`](https://ieeexplore.ieee.org/document/10679212) [`code`](https://github.com/Dilingliao/HLMamba) `TGRS'24` `HSI+LiDAR fusion` `23★`
+- **FusionMamba** — Plug-and-play dual-input Mamba block for arbitrary two-source
+  fusion, covering hyperspectral pansharpening and HSI-MSI fusion. See
+  [Mamba](#fusion-super-resolution--detection).
+  [`paper`](https://arxiv.org/abs/2404.07932) [`code`](https://github.com/PSRben/FusionMamba) `TGRS'24` `fusion` `139★`
+- **HTD-Mamba** — Self-supervised spectrally contrastive learning over group-wise
+  spectral embeddings with a pyramid SSM backbone, for target detection.
+  ESI Highly Cited.
+  [`paper`](https://arxiv.org/abs/2407.06841) [`code`](https://github.com/shendb2022/HTD-Mamba) `TGRS'25` `target detection` `51★`
+- **MSFMamba** — Three-block design (multi-scale spatial Mamba, spectral Mamba,
+  dual-input fusion Mamba) extending Mamba to two heterogeneous sources.
+  [`paper`](https://arxiv.org/abs/2408.14255) [`code`](https://github.com/oucailab/MSFMamba) `TGRS'25` `HSI+LiDAR/SAR fusion` `51★`
+
+### Hyperspectral datasets
+
+**The classic scenes.** Small, single-scene, and near-saturated. Still the default
+comparison set, which is a problem — see the note below.
+
+| Dataset | Sensor | Bands | Classes | Notes |
+|---|---|---|---|---|
+| Indian Pines | AVIRIS | 224 (200 after water-band removal) | 16 | 145×145. Heavily imbalanced; the most over-used benchmark in the field. |
+| Pavia University | ROSIS | 103 | 9 | 610×340. Urban, high spatial detail. |
+| Pavia Centre | ROSIS | 102 | 9 | Companion scene to Pavia University. |
+| Salinas | AVIRIS | 224 (204 usable) | 16 | 512×217. Agricultural, spectrally clean, very high reported accuracies. |
+| Kennedy Space Center | AVIRIS | 176 usable | 13 | Wetland vegetation. |
+| Botswana | Hyperion (EO-1) | 145 usable | 14 | Spaceborne rather than airborne. |
+| Houston 2013 | CASI | 144 | 15 | 349×1905. IEEE GRSS Data Fusion Contest; has an official train/test split. |
+| Houston 2018 | CASI + LiDAR | 48 | 20 | GRSS DFC 2018; multimodal. |
+| WHU-Hi (Longkou / Hanchuan / Honghu) | UAV-borne | 270-274 | 9-22 | Low-altitude UAV, fine crop classes; more realistic than the AVIRIS scenes. |
+
+**Modern large-scale corpora.** These are what pretraining actually needs, and the
+reason foundation models became possible for HSI.
+
+- **HySpecNet-11k** — EnMAP spaceborne patches at 202 bands, built specifically as
+  a large-scale corpus for learned compression and pretraining rather than
+  pixel classification.
+- **SpectralEarth** — Large EnMAP-derived corpus assembled for hyperspectral
+  foundation model pretraining, with global geographic coverage.
+- **HyperGlobal-450K** — The pretraining corpus behind HyperSIGMA; global, and by a
+  wide margin the largest used for an HSI foundation model to date.
+- **EnMAP / PRISMA / EMIT archives** — Operational spaceborne imaging spectrometer
+  missions. The practical source of at-scale modern HSI data, and where new
+  benchmarks should be coming from.
+- **ARAD-1K, ICVL, CAVE, Harvard** — Natural-scene hyperspectral sets used mainly
+  for spectral reconstruction from RGB, not Earth observation classification.
+
+### A note on HSI benchmarking
+
+Worth reading before you trust any accuracy number in this sub-field.
+
+The standard protocol on Indian Pines, Pavia and Salinas draws training and test
+pixels **randomly from the same scene**. Because neighbouring pixels are spatially
+correlated and most architectures consume a spatial patch around the target pixel,
+training patches physically overlap test pixels. The result is information leakage,
+and it inflates reported accuracy substantially.
+
+This is why nearly every paper on these scenes reports 98-99%+ overall accuracy,
+why differences between methods are often within noise, and why gains frequently
+fail to transfer to new scenes. The literature on **disjoint sampling** and spatially
+separated train/test splits addresses this directly, and the Houston 2013 benchmark
+is more trustworthy precisely because it ships a fixed, spatially disjoint split.
+
+Practical guidance:
+
+- Treat single-scene random-split results as a sanity check, not evidence.
+- Prefer benchmarks with official disjoint splits, or construct spatially separated
+  folds yourself.
+- For any claim about generalisation, evaluate cross-scene or cross-sensor —
+  the domain adaptation literature exists because this gap is large and real.
+- When comparing to published numbers, confirm the sampling protocol matches
+  before concluding anything. It frequently does not.
+
+---
