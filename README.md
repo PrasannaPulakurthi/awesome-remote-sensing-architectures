@@ -274,3 +274,122 @@ three are the current standards.
   [`paper`](https://arxiv.org/abs/2503.11849) [`code`](https://github.com/zhu-xlab/Copernicus-FM) `ICCV'25` `150★`
 
 ---
+
+## Vision Transformers
+
+Backbone pretraining lives under [Foundation Models](#foundation-models--self-supervised-pretraining).
+This section covers transformer architectures designed around specific remote
+sensing *problems* — rotation, scale variance, bi-temporal reasoning, and the
+extreme size of a single scene.
+
+### Efficient backbones
+
+- **LeMeViT** — Learnable sparse "meta tokens" exchange information with image
+  tokens through dual cross-attention, cutting attention cost on redundant RS
+  imagery for a ~1.7× speedup.
+  [`paper`](https://arxiv.org/abs/2405.09789) [`code`](https://github.com/ViTAE-Transformer/LeMeViT) `IJCAI'24` `backbone` `55★`
+
+### Semantic segmentation
+
+- **DC-Swin** — Swin encoder paired with a densely connected feature aggregation
+  decoder to restore the multi-scale spatial detail that window attention loses.
+  [`paper`](https://arxiv.org/abs/2104.12137) [`code`](https://github.com/WangLibo1995/GeoSeg) `GRSL'22` `segmentation` `1102★`
+- **UNetFormer** — ResNet18 encoder with a transformer decoder built on an
+  efficient global-local attention block, reaching 322 FPS at competitive mIoU.
+  The canonical RS hybrid, and GeoSeg is the de-facto RS segmentation model zoo.
+  [`paper`](https://arxiv.org/abs/2109.08937) [`code`](https://github.com/WangLibo1995/GeoSeg) `ISPRS J.'22` `segmentation` `1102★`
+- **BuildFormer** — Dual-path window transformer keeping a high-resolution spatial
+  branch alongside the global context branch, for sharp building boundaries.
+  [`paper`](https://ieeexplore.ieee.org/document/9808187) [`code`](https://github.com/WangLibo1995/BuildFormer) `TGRS'22` `building extraction` `110★`
+- **CMTFNet** — Encoder-decoder fusing CNN local features with a multiscale
+  multihead self-attention decoder plus channel-wise feature fusion.
+  [`paper`](https://ieeexplore.ieee.org/document/10247595) [`code`](https://github.com/DrWuHonglin/CMTFNet) `TGRS'23` `segmentation` `42★`
+- **RSPrompter** — Learns category-aware prompt embeddings that drive a frozen SAM
+  decoder, turning SAM into an end-to-end automatic instance segmenter rather than
+  an interactive one.
+  [`paper`](https://arxiv.org/abs/2306.16269) [`code`](https://github.com/KyanChen/RSPrompter) `TGRS'24` `instance segmentation` `667★`
+- **CrossEarth** — Earth-style injection augmentation combined with multi-task
+  DINOv2 backbone adaptation for cross-domain segmentation without target-domain
+  data.
+  [`paper`](https://arxiv.org/abs/2410.22629) [`code`](https://github.com/Cuzyoung/CrossEarth) `TPAMI'25` `domain generalization` `189★`
+
+### Change detection
+
+- **BIT** — Expresses each image as a handful of semantic tokens and refines them
+  with a small transformer, beating pure-CNN baselines at roughly a third of the
+  cost. The reference transformer CD baseline.
+  [`paper`](https://arxiv.org/abs/2103.00208) [`code`](https://github.com/justchenhao/BIT_CD) `TGRS'21` `change detection` `513★`
+- **ChangeStar** — A ChangeMixin module converts any single-temporal segmentation
+  network into a change detector, removing the need for paired bi-temporal labels
+  entirely.
+  [`paper`](https://arxiv.org/abs/2108.07002) [`code`](https://github.com/Z-Zheng/ChangeStar) `ICCV'21` `weakly-supervised CD` `191★`
+- **ICIF-Net** — Parallel CNN and transformer branches communicate at equal
+  resolution, then fuse across scales, avoiding the local-global misalignment of
+  late fusion.
+  [`paper`](https://ieeexplore.ieee.org/document/9759285) [`code`](https://github.com/ZhengJianwei2/ICIF-Net) `TGRS'22` `change detection` `42★`
+- **TransUNetCD** — UNet skeleton where a transformer encodes tokenized CNN feature
+  maps, with skip connections restoring the localisation a pure-transformer encoder
+  loses.
+  [`paper`](https://ieeexplore.ieee.org/document/9761892) `TGRS'22` `change detection` `no code`
+- **Changer** — A meta-architecture that inserts bi-temporal feature-interaction
+  layers *inside* the extractor rather than after it, including a parameter-free
+  feature exchange variant.
+  [`paper`](https://arxiv.org/abs/2209.08290) [`code`](https://github.com/likyoo/open-cd) `TGRS'23` `change detection` `890★`
+- **SCanNet** — Jointly models the triple-branch spatio-temporal token set instead
+  of fusing semantic and change branches post hoc.
+  [`paper`](https://ieeexplore.ieee.org/document/10443352) [`code`](https://github.com/ggsDing/SCanNet) `TGRS'24` `semantic CD` `64★`
+- **BAN** — Bi-temporal adapter network that freezes a foundation model (CLIP or
+  SAM) and bridges it to any existing CD head with few learnable parameters.
+  [`paper`](https://arxiv.org/abs/2312.01163) [`code`](https://github.com/likyoo/BAN) `TGRS'24` `change detection, PEFT` `102★`
+- **Changen2** — Resolution-scalable generative change process model that
+  synthesises labelled multi-temporal sequences, yielding zero-shot-capable
+  pretrained CD weights.
+  [`paper`](https://arxiv.org/abs/2406.17998) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `TPAMI'24` `generative CD` `263★`
+- **AnyChange** — Training-free bi-temporal latent matching over SAM's latent
+  space, giving SAM zero-shot change detection with no CD training at all.
+  [`paper`](https://arxiv.org/abs/2402.01188) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `NeurIPS'24` `zero-shot CD` `263★`
+
+### Oriented object detection
+
+Objects in overhead imagery have no canonical "up", so the whole detection stack —
+anchors, NMS, loss, receptive field — has to be rebuilt around rotation.
+
+- **Oriented R-CNN** — An oriented RPN generates high-quality rotated proposals
+  nearly cost-free via a 6-parameter midpoint-offset representation, removing the
+  two-stage oriented-proposal bottleneck.
+  [`paper`](https://arxiv.org/abs/2108.05699) [`code`](https://github.com/jbwang1997/OBBDetection) `ICCV'21` `oriented detection` `611★`
+- **LSKNet** — Decomposes large-kernel convolutions into a depth-wise sequence with
+  growing kernel and dilation, plus spatial kernel selection to size the receptive
+  field per object. The standard modern RS backbone.
+  [`paper`](https://arxiv.org/abs/2303.09030) [`code`](https://github.com/zcablii/LSKNet) `ICCV'23` `oriented detection` `700★`
+  · journal extension generalising it to a lightweight all-purpose backbone:
+  [`paper`](https://arxiv.org/abs/2403.11735) `IJCV'24`
+- **ARC** — Convolution kernels rotate adaptively per input through a conditional
+  computation routing mechanism, handling multiple object orientations within a
+  single image.
+  [`paper`](https://arxiv.org/abs/2303.07820) [`code`](https://github.com/LeapLabTHU/ARC) `ICCV'23` `oriented detection` `148★`
+- **ARS-DETR** — Aspect-ratio-aware circular smooth label, rotated deformable
+  attention and an aspect-ratio-weighted angle loss make a DETR competitive at
+  high-IoU oriented detection.
+  [`paper`](https://arxiv.org/abs/2303.04989) [`code`](https://github.com/httle/ARS-DETR) `TGRS'24` `oriented detection, DETR` `75★`
+- **PKINet** — Parallel multi-scale non-dilated kernels for local context plus a
+  context anchor attention module for long-range context, avoiding the background
+  noise that large kernels pull in.
+  [`paper`](https://arxiv.org/abs/2403.06258) [`code`](https://github.com/PKINet/PKINet) `CVPR'24` `oriented detection` `89★`
+- **MSFA / SARDet-100K** — Multi-stage filter-augmentation pretraining bridges the
+  RGB-to-SAR domain and structure gap; ships the first COCO-scale multi-class SAR
+  detection dataset.
+  [`paper`](https://arxiv.org/abs/2403.06534) [`code`](https://github.com/zcablii/SARDet_100K) `NeurIPS'24` `SAR detection` `782★`
+- **Point2RBox-v2** — First to exploit inter-instance spatial layout for
+  point-supervised oriented detection, via Gaussian overlap and Voronoi watershed
+  losses that bound the object extent from above and below.
+  [`paper`](https://arxiv.org/abs/2502.04268) [`code`](https://github.com/VisionXLab/point2rbox-v2) `CVPR'25` `weakly-supervised detection` `45★`
+
+### Segmentation datasets generated by foundation models
+
+- **SAMRS** — Prompts SAM with existing RS detection boxes to auto-generate 105K
+  images and 1.67M instances, enabling *segmentation*-task pretraining instead of
+  classification pretraining.
+  [`paper`](https://arxiv.org/abs/2305.02034) [`code`](https://github.com/ViTAE-Transformer/SAMRS) `NeurIPS'23` `segmentation pretraining` `385★`
+
+---
