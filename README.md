@@ -902,7 +902,7 @@ covered is more useful than implying uniform depth.
 | Diffusion & generative | **Partial** — verified entries only |
 | SAR | **Seeded** — despeckling and cross-references; ATR and InSAR still missing |
 | 3D, LiDAR & neural fields | **Seeded** — Sat-NeRF added; Gaussian splatting and height estimation missing |
-| Satellite image time series | **Seeded** — U-TAE added; TSViT, Presto and TESSERA pending verification |
+| Satellite image time series | **Seeded** — U-TAE and TSViT added; Presto and TESSERA pending verification |
 | Surveys | **Planned** |
 | Benchmarks & datasets | **Partial** — hyperspectral only; segmentation, CD, detection and SITS benchmarks missing |
 
