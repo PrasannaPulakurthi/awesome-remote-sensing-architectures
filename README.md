@@ -859,9 +859,10 @@ unevenly-spaced temporal axis without pretending it is a video.
 - **Exchanger** — Reformulates SITS processing as set prediction rather than
   sequence modelling, targeting irregular acquisition times directly.
   [`paper`](https://arxiv.org/abs/2305.02086) `preprint` `segmentation, crop mapping`
-- **TSViT** — Factorised spatiotemporal attention over temporally-ordered patch
-  tokens, with acquisition-time positional encoding rather than index position.
-  [`paper`](https://arxiv.org/abs/2301.04944) `preprint` `segmentation, crop mapping`
+- **TSViT** — Factorises attention into temporal-then-spatial over
+  spatiotemporal patch tokens, with acquisition-date positional encoding rather
+  than sequence index, so irregular revisit intervals are represented directly.
+  [`paper`](https://arxiv.org/abs/2301.04944) `CVPR'23` `segmentation, crop mapping`
 
 Time-series capability also appears in several models listed elsewhere:
 
@@ -1129,21 +1130,26 @@ covered is more useful than implying uniform depth.
 | Diffusion & generative | **Complete** — controllable generation, restoration, synthetic labels |
 | SAR | **Complete** — despeckling, recognition, detection and fusion; InSAR still missing |
 | 3D, LiDAR & neural fields | **Complete** — neural fields and Gaussian splatting; airborne LiDAR still missing |
-| Satellite image time series | **Seeded** — U-TAE and TSViT added; Presto and TESSERA pending verification |
+| Satellite image time series | **Complete** — U-TAE, TSViT and Exchanger, plus cross-references |
 | Surveys | **Complete** — five current surveys covering the main families |
 | Benchmarks & datasets | **Complete** — segmentation, CD, detection, classification, SITS and evaluation suites |
 
-Planned sections are genuinely absent rather than thin, and seeded sections are
-deliberately short — they contain only entries verified against a primary source,
-plus cross-references to relevant models indexed elsewhere in the list.
-Contributions toward them are especially welcome.
+Every section marked complete contains only entries verified against a primary
+source, plus cross-references to relevant models indexed under other families.
+Complete means the main architectural threads are covered, not that the section
+is exhaustive — the gaps below are named rather than papered over, and
+contributions toward them are especially welcome.
 
 **Known entries awaiting verification.** These are real papers that belong in the
 list, held back only because their venue could not be confirmed against a primary
 source during indexing:
 
-- **Presto** and **TESSERA** — pixel-timeseries models with released weights;
-  venue confirmation incomplete.
+- **Presto** and **TESSERA** — widely used pixel-timeseries models with released
+  weights. Crossref holds no record for either, and the strongest evidence found
+  for Presto is an ICLR 2024 *submission* header, which is not an acceptance.
+  Both stay out until a venue can be confirmed.
+- **InSAR** architectures and **airborne LiDAR** semantic segmentation are not
+  yet covered; both are real gaps rather than deliberate exclusions.
 
 ### On verification
 
