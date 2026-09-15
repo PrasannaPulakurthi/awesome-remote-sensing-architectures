@@ -39,7 +39,8 @@ CUTOFF_YEAR = 2021
 
 ALLOWED_VENUES = {
     "CVPR", "ICCV", "ECCV", "NeurIPS", "ICLR", "ICML", "AAAI", "IJCAI",
-    "TPAMI", "IJCV", "TGRS", "ISPRS J.", "RSE", "JSTARS", "GRSL", "GRSM",
+    "TPAMI", "IJCV", "TGRS", "ISPRS J.", "RSE", "JSTARS", "GRSL",
+    "GRSM", "IEEE GRSM",
     "IEEE TIP", "IEEE TMM", "IEEE TCSVT", "Information Fusion",
     "Nat. Mach. Intell.",
 }

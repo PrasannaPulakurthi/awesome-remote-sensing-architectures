@@ -238,8 +238,8 @@ applied work actually builds on.
   [`docs`](https://clay-foundation.github.io/model/) [`code`](https://github.com/Clay-foundation/model) `model release` `Apache-2.0` `614★`
 - **SSL4EO-S12** — The de-facto standard global SSL pretraining corpus for
   Sentinel-1/2 (251K locations × 4 seasons, 1.5 TB), shipped with reference
-  weights for four SSL methods. ⚠ `IEEE GRSM`
-  [`paper`](https://arxiv.org/abs/2211.07044) [`code`](https://github.com/zhu-xlab/SSL4EO-S12) `corpus` `300★`
+  weights for four SSL methods.
+  [`paper`](https://arxiv.org/abs/2211.07044) [`code`](https://github.com/zhu-xlab/SSL4EO-S12) `IEEE GRSM'23†` `corpus` `300★`
 - **Major TOM** — A grid and metadata standard that makes terabyte-scale EO
   datasets interoperable and mergeable; now the default distribution format on
   Hugging Face. ⚠ `IGARSS`
