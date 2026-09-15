@@ -27,6 +27,7 @@ Usage:
 """
 
 import argparse
+import html
 import json
 import os
 import re
@@ -86,7 +87,8 @@ def changed_lines_from_git(base, path):
     try:
         out = subprocess.run(
             ["git", "diff", "--unified=0", base + "...HEAD", "--", path],
-            capture_output=True, text=True, check=True).stdout
+            capture_output=True, text=True, check=True,
+                             encoding="utf-8").stdout
     except Exception as exc:
         sys.stderr.write("git diff failed: %s\n" % exc)
         return set()
@@ -99,6 +101,50 @@ def changed_lines_from_git(base, path):
         count = int(m.group("count") or 1)
         lines.update(range(start, start + count))
     return lines
+
+
+ANY_URL_RE = re.compile(r"\((?P<url>https?://[^)\s]+)\)")
+# A star badge carries a github.com link target of its own. Left in, adding a
+# badge to an existing entry would look like a changed citation.
+BADGE_ANY_RE = re.compile(r"\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)")
+
+
+def citation_signature(block):
+    """What a citation asserts, independent of how it is formatted.
+
+    Entries here span several lines - a name, a wrapped description, then the
+    links - so the signature is computed over the whole entry rather than one
+    line. Two entries with the same signature make the same factual claim, so a
+    change between them is cosmetic and needs no re-verification.
+    """
+    line = " ".join(block.split())
+    if not line.startswith("- "):
+        return None
+    line = BADGE_ANY_RE.sub("", line)
+    urls = tuple(sorted(u for u in ANY_URL_RE.findall(line)
+                        if "img.shields.io" not in u))
+    if not urls:
+        return None
+    tags = tuple(sorted(t for t in TAG_RE.findall(line)
+                        if not t.startswith(("paper", "code", "weights", "docs"))))
+    text = ANY_URL_RE.sub("", line)
+    text = re.sub(r"\[[^\]]*\]|`[^`]*`|!\[[^\]]*\]", "", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+    return (text, urls, tags)
+
+
+def unchanged_signatures(base, path):
+    """Citation signatures present in `path` at revision `base`."""
+    import subprocess
+    try:
+        old = subprocess.run(["git", "show", "%s:%s" % (base, path)],
+                             capture_output=True, text=True, check=True,
+                             encoding="utf-8").stdout
+    except Exception as exc:
+        sys.stderr.write("could not read %s at %s: %s\n" % (path, base, exc))
+        return set()
+    return {sig for sig in (citation_signature(e.raw_tail)
+                           for e in parse_entries(old)) if sig}
 
 
 def fetch(url, timeout=30, accept=None):
@@ -191,7 +237,10 @@ def _arxiv_from_html(arxiv_id):
     if raw:
         m = CITATION_TITLE_RE.search(raw)
         if m:
-            title = " ".join(m.group(1).decode("utf-8", "replace").split())
+            # Page metadata is HTML-escaped; comparing it undecoded reports a
+            # spurious mismatch for any title containing an ampersand.
+            title = html.unescape(m.group(1).decode("utf-8", "replace"))
+            title = " ".join(title.split())
             return title, None, "ok"
         return None, None, "unchecked"
     if err == 404:
@@ -319,15 +368,21 @@ def crossref_venue_for_title(title):
 
     Crossref indexes conference proceedings as well as journals, which makes it
     the only single source that can confirm both kinds of venue in this list.
+
+    Supplementary material is registered as its own record, with a title derived
+    from the paper's and no venue attached. Those rank highly, so taking the
+    first hit blindly can match a supplementary PDF and conclude the paper has
+    no venue.
     """
-    url = ("https://api.crossref.org/works?rows=1"
-           "&select=title,container-title,issued"
+    url = ("https://api.crossref.org/works?rows=5"
+           "&select=title,container-title,issued,type"
            "&query.bibliographic=" + urllib.parse.quote(title))
     raw, _ = fetch(url, accept="application/json")
     if not raw:
         return None, None, None
     try:
-        items = json.loads(raw)["message"]["items"]
+        items = [i for i in json.loads(raw)["message"]["items"]
+                 if i.get("type") != "component"]
         if not items:
             return None, None, None
         it = items[0]
@@ -552,7 +607,20 @@ def main():
         with open(args.changed_lines, encoding="utf-8") as fh:
             wanted |= set(int(x) for x in fh.read().split() if x.strip().isdigit())
     if args.diff_base:
-        wanted |= changed_lines_from_git(args.diff_base, args.readme)
+        # Select by what the citation asserts, not by which lines moved. A
+        # reformatting pass changes every line while changing no citation, and
+        # re-verifying the whole list for that is slow enough that people
+        # eventually turn the check off.
+        known = unchanged_signatures(args.diff_base, args.readme)
+        changed = changed_lines_from_git(args.diff_base, args.readme)
+        for e in entries:
+            sig = citation_signature(e.raw_tail)
+            if sig is None or sig not in known:
+                wanted.add(e.line_no)
+        skipped = len(changed) - len(wanted)
+        if skipped > 0:
+            sys.stderr.write("%d changed lines assert no new citation - "
+                             "not re-verified\n" % skipped)
     if wanted:
         entries = [e for e in entries
                    if any(e.line_no <= n <= e.line_no + 3 for n in wanted)]
