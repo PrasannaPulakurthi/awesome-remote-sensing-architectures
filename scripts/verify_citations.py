@@ -6,6 +6,9 @@ What this catches:
     This is the single most common way a fabricated citation enters a list.
   * A DOI whose Crossref record disagrees with the venue tag in the entry.
   * A code repository that no longer exists.
+  * A venue tag that disagrees with the Crossref record for that paper,
+    including a main-conference tag on a workshop paper.
+  * A hardcoded star count where a live badge belongs.
   * A venue outside the policy list, or a year before the cutoff.
   * Duplicate paper links.
 
@@ -272,6 +275,79 @@ def check_crossref(doi):
     return title, container, year
 
 
+# Crossref container names for the venue abbreviations used in entry tags. The
+# check is a substring match against the lowercased container title, with
+# `reject` patterns to stop a main-conference tag matching its workshop
+# proceedings - a distinction this list cares about and Crossref encodes only in
+# the container name.
+VENUE_PATTERNS = {
+    "CVPR": (["conference on computer vision and pattern recognition"], ["workshop"]),
+    "CVPRW": (["computer vision and pattern recognition workshops"], []),
+    "ICCV": (["international conference on computer vision"], ["workshop"]),
+    "ECCV": (["european conference on computer vision", "lecture notes in computer science"], []),
+    "TPAMI": (["transactions on pattern analysis"], []),
+    "IJCV": (["international journal of computer vision"], []),
+    "TGRS": (["transactions on geoscience and remote sensing"], []),
+    "JSTARS": (["journal of selected topics in applied earth"], []),
+    "GRSL": (["geoscience and remote sensing letters"], []),
+    "GRSM": (["geoscience and remote sensing magazine"], []),
+    "IEEE GRSM": (["geoscience and remote sensing magazine"], []),
+    "ISPRS J.": (["isprs journal of photogrammetry"], []),
+    "RSE": (["remote sensing of environment"], []),
+    "IEEE TIP": (["transactions on image processing"], []),
+    "IEEE TMM": (["transactions on multimedia"], []),
+    "IEEE TCSVT": (["transactions on circuits and systems for video"], []),
+    "Information Fusion": (["information fusion"], []),
+    "Nat. Mach. Intell.": (["nature machine intelligence"], []),
+    "AAAI": (["aaai conference on artificial intelligence"], []),
+    "IJCAI": (["international joint conference on artificial intelligence"], []),
+}
+
+
+def crossref_venue_for_title(title):
+    """Look up a paper by title and return (matched_title, container, year).
+
+    Crossref indexes conference proceedings as well as journals, which makes it
+    the only single source that can confirm both kinds of venue in this list.
+    """
+    url = ("https://api.crossref.org/works?rows=1"
+           "&select=title,container-title,issued"
+           "&query.bibliographic=" + urllib.parse.quote(title))
+    raw, _ = fetch(url, accept="application/json")
+    if not raw:
+        return None, None, None
+    try:
+        items = json.loads(raw)["message"]["items"]
+        if not items:
+            return None, None, None
+        it = items[0]
+        found = (it.get("title") or [""])[0]
+        container = (it.get("container-title") or [""])[0]
+        parts = (it.get("issued", {}).get("date-parts") or [[None]])[0]
+        return " ".join(found.split()), container, (parts[0] if parts else None)
+    except Exception:
+        return None, None, None
+
+
+# Deliberately not compared: the year. IEEE early access routinely puts a paper
+# online a year before its volume, so a tag of TGRS'21 against a Crossref year of
+# 2022 is normal rather than wrong. Flagging those would produce constant noise
+# and train reviewers to ignore the report.
+def venue_matches(tag_venue, container):
+    """Does a Crossref container title correspond to this venue abbreviation?
+
+    Returns True, False, or None when the abbreviation has no pattern defined.
+    """
+    pats = VENUE_PATTERNS.get(tag_venue)
+    if not pats or not container:
+        return None
+    accept, reject = pats
+    c = container.lower()
+    if any(r in c for r in reject):
+        return False
+    return any(a in c for a in accept)
+
+
 def check_github(owner, repo):
     """Return (stars, status) where status is 'ok', 'missing' or 'unchecked'."""
     raw, err = fetch("https://api.github.com/repos/%s/%s" % (owner, repo))
@@ -286,7 +362,7 @@ def check_github(owner, repo):
     return None, "unchecked"
 
 
-def verify(entries, check_stars=True, delay=1.0):
+def verify(entries, check_stars=True, delay=1.0, check_venues=True):
     findings = []
     seen = {}
     for e in entries:
@@ -305,6 +381,7 @@ def verify(entries, check_stars=True, delay=1.0):
         seen.setdefault(key, e.name)
 
         venue_tag = None
+        venue_name = None
         for t in e.tags:
             if t in STATUS_TAGS:
                 venue_tag = t
@@ -312,7 +389,7 @@ def verify(entries, check_stars=True, delay=1.0):
             m = VENUE_TAG_RE.match(t)
             if m:
                 venue_tag = t
-                venue = m.group("venue").strip()
+                venue = venue_name = m.group("venue").strip()
                 year = 2000 + int(m.group("yy"))
                 if year < CUTOFF_YEAR:
                     findings.append(Finding("fail", label,
@@ -344,6 +421,18 @@ def verify(entries, check_stars=True, delay=1.0):
                         "- confirm the identifier is correct" % e.name))
                 if jref:
                     findings.append(Finding("info", label, "arXiv journal-ref: " + jref))
+                if check_venues and venue_name and title:
+                    found, container, cyear = crossref_venue_for_title(title)
+                    time.sleep(delay)
+                    if found and norm(found) == norm(title):
+                        ok = venue_matches(venue_name, container)
+                        if ok is False:
+                            findings.append(Finding("warn", label,
+                                "entry says %s but Crossref lists this paper in "
+                                "'%s' (%s)" % (venue_name, container, cyear)))
+                        elif ok:
+                            findings.append(Finding("info", label,
+                                "venue confirmed: %s (%s)" % (container, cyear)))
 
         dm = DOI_RE.search(e.paper_url)
         if dm:
@@ -374,9 +463,12 @@ def verify(entries, check_stars=True, delay=1.0):
                     "repository %s/%s not checked (API rate limited)"
                     % (gm.group("owner"), repo)))
             elif check_stars and e.stars:
-                if abs(stars - e.stars) / float(max(e.stars, 1)) > 0.5:
-                    findings.append(Finding("warn", label,
-                        "recorded %d stars but repository now has %d" % (e.stars, stars)))
+                # Star counts live in shields.io badges generated from the code
+                # link, so a number written into the file is stale by
+                # construction rather than merely out of date.
+                findings.append(Finding("warn", label,
+                    "hardcoded star count %d found - use a live badge instead"
+                    % e.stars))
     return findings
 
 
@@ -388,6 +480,8 @@ def main():
     ap.add_argument("--diff-base",
                     help="verify only entries touched since this git ref")
     ap.add_argument("--no-stars", action="store_true")
+    ap.add_argument("--no-venues", action="store_true",
+                    help="skip the Crossref venue cross-check")
     ap.add_argument("--delay", type=float, default=1.0)
     ap.add_argument("--markdown", action="store_true")
     args = ap.parse_args()
@@ -417,7 +511,8 @@ def main():
         return 0
 
     sys.stderr.write("Verifying %d entries...\n" % len(entries))
-    findings = verify(entries, check_stars=not args.no_stars, delay=args.delay)
+    findings = verify(entries, check_stars=not args.no_stars, delay=args.delay,
+                      check_venues=not args.no_venues)
 
     fails = [f for f in findings if f.level == "fail"]
     warns = [f for f in findings if f.level == "warn"]

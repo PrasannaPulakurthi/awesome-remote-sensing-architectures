@@ -85,7 +85,12 @@ An entry belongs in this list only if **all** of these hold:
 4. It is remote sensing / Earth observation.
 
 **Code is strongly preferred.** Verify the repository actually resolves and
-belongs to that paper. Do not record a star count you did not read off the page.
+belongs to that paper. Do not write a star count as text — stars are live badges
+generated from the repository URL:
+
+```
+[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO/stargazers)
+```
 
 ## Entry format
 
@@ -109,7 +114,7 @@ Well suited — mechanical, verifiable, low risk:
 - Finding duplicate entries listed under two sub-areas.
 - Updating the task index when sections are added or renamed.
 - Checking that every anchor link in the contents and task index resolves.
-- Refreshing star counts **from fetched pages**.
+- Replacing any hardcoded star count with a live badge.
 
 Poorly suited — do not attempt autonomously:
 
