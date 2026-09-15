@@ -50,6 +50,11 @@ ALLOWED_VENUES = {
 
 STATUS_TAGS = {"preprint", "model release", "corpus", "scaling", "2022", "2024", "2025"}
 
+# Workshop proceedings sit outside the venue policy but are accepted when the
+# entry says so plainly, so readers are never left thinking a workshop paper
+# appeared at the main conference.
+WORKSHOP_VENUES = {"CVPRW", "ICCVW", "ECCVW", "NeurIPSW"}
+
 UA = ("awesome-remote-sensing-architectures-verifier/1.0 "
       "(+https://github.com/PrasannaPulakurthi/awesome-remote-sensing-architectures)")
 
@@ -142,6 +147,7 @@ class Entry:
     code_urls: list = field(default_factory=list)
     tags: list = field(default_factory=list)
     stars: int = None
+    raw_tail: str = ""
 
 
 def parse_entries(text):
@@ -152,10 +158,12 @@ def parse_entries(text):
         m = ENTRY_NAME_RE.match(line)
         if m:
             current = Entry(name=m.group("name").strip(), line_no=i)
+            current.raw_tail = line
             entries.append(current)
             continue
         if current is None:
             continue
+        current.raw_tail += "\n" + line
         if PAPER_LINK_RE.search(line) or CODE_LINK_RE.search(line):
             pm = PAPER_LINK_RE.search(line)
             if pm and not current.paper_url:
@@ -348,6 +356,42 @@ def venue_matches(tag_venue, container):
     return any(a in c for a in accept)
 
 
+# Vocabulary that a remote sensing paper title almost always contains somewhere.
+# This replaces an earlier check that asked whether the model name appeared in
+# the title. That was wrong roughly one time in seven, because models are
+# routinely named differently from their papers - LSKNet's paper is "Large
+# Selective Kernel Network", SatMAE++'s is "Rethinking Transformers
+# Pre-training". Flagging correct entries at that rate teaches a reviewer to
+# skim past the report, which defeats the point of having one.
+#
+# The real failure this guards against is an identifier that resolves to a paper
+# from another field entirely. Both times that happened here the giveaway was the
+# same: a title with no remote sensing vocabulary in it at all.
+DOMAIN_TERMS = (
+    "remote sensing", "satellite", "aerial", "earth observation", "geospatial",
+    "hyperspectral", "multispectral", "spectral", "sar", "synthetic aperture",
+    "radar", "lidar", "land cover", "land-cover", "land use", "change detection",
+    "crop", "agricultur", "urban", "building", "road", "flood", "forest",
+    "sentinel", "landsat", "uav", "overhead", "geoscience", "photogrammetr",
+    "elevation", "terrain", "orthophoto", "pansharpen", "despeckl", "geo",
+    "earth", "map", "segmentation of", "scene classification", "vhr",
+    "cloud removal", "object detection", "image time series", "nerf",
+)
+
+
+def looks_like_remote_sensing(title, model_name=""):
+    """Heuristic: does this title plausibly belong in a remote sensing list?
+
+    Returns True if the title carries domain vocabulary, or if the model name
+    appears in it (which settles the question regardless of wording).
+    """
+    t = title.lower()
+    if any(term in t for term in DOMAIN_TERMS):
+        return True
+    n = norm(model_name).replace(" ", "")
+    return bool(n) and n in norm(title).replace(" ", "")
+
+
 def check_github(owner, repo):
     """Return (stars, status) where status is 'ok', 'missing' or 'unchecked'."""
     raw, err = fetch("https://api.github.com/repos/%s/%s" % (owner, repo))
@@ -369,8 +413,11 @@ def verify(entries, check_stars=True, delay=1.0, check_venues=True):
         label = "%s (line %d)" % (e.name, e.line_no)
 
         if not e.paper_url:
-            findings.append(Finding("warn", label,
-                "has a code link but no paper link"))
+            # "model release" marks something published as an artefact rather
+            # than a paper, which is a real and documented category here.
+            if "model release" not in e.tags:
+                findings.append(Finding("warn", label,
+                    "has a code link but no paper link"))
             continue
 
         key = e.paper_url.rstrip("/")
@@ -394,7 +441,13 @@ def verify(entries, check_stars=True, delay=1.0, check_venues=True):
                 if year < CUTOFF_YEAR:
                     findings.append(Finding("fail", label,
                         "year %d predates the %d cutoff" % (year, CUTOFF_YEAR)))
-                if venue not in ALLOWED_VENUES:
+                if venue in WORKSHOP_VENUES:
+                    if "⚠" not in e.raw_tail:
+                        findings.append(Finding("warn", label,
+                            "workshop venue '%s' must carry the warning marker "
+                            "so it does not read as a main-conference paper"
+                            % venue))
+                elif venue not in ALLOWED_VENUES:
                     findings.append(Finding("warn", label,
                         "venue '%s' is not in the policy list (needs a marker)" % venue))
                 break
@@ -414,11 +467,11 @@ def verify(entries, check_stars=True, delay=1.0, check_venues=True):
                     "this entry was NOT verified" % am.group("id")))
             else:
                 findings.append(Finding("info", label, "arXiv title: " + title))
-                short = norm(e.name).split()[0] if norm(e.name) else ""
-                if short and len(short) > 3 and short not in norm(title):
+                if not looks_like_remote_sensing(title, e.name):
                     findings.append(Finding("warn", label,
-                        "model name '%s' does not appear in the arXiv title "
-                        "- confirm the identifier is correct" % e.name))
+                        "resolved title contains no remote sensing vocabulary "
+                        "- confirm the identifier points at the right paper: "
+                        "'%s'" % title))
                 if jref:
                     findings.append(Finding("info", label, "arXiv journal-ref: " + jref))
                 if check_venues and venue_name and title:
