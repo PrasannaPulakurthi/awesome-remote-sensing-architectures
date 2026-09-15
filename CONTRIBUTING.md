@@ -84,7 +84,7 @@ verifier will flag it.
 Badge format, derived directly from the repository URL:
 
 ```
-[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO/stargazers)
+[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO)
 ```
 
 Stars indicate adoption, not quality. Plenty of excellent work has few, and they

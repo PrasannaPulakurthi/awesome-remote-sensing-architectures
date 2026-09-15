@@ -89,7 +89,7 @@ belongs to that paper. Do not write a star count as text — stars are live badg
 generated from the repository URL:
 
 ```
-[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO/stargazers)
+[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO)
 ```
 
 ## Entry format
