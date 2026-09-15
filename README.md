@@ -699,58 +699,140 @@ Practical guidance:
 
 ## Vision-Language Models & Multimodal LLMs
 
-> **Partial section.** See [Coverage status](#coverage-status) — entries here are
-> verified, but this family is under-covered relative to its current activity.
+Language entered remote sensing through two distinct doors, and they are worth
+keeping separate. **Contrastive models** (CLIP-style) align images and text in a
+shared embedding space, which buys zero-shot classification and cross-modal
+retrieval. **Multimodal LLMs** attach a vision encoder to a language model, which
+buys conversation, grounding and question answering. The first is a
+representation; the second is an interface.
 
-- **GeoChat** — The first grounded large vision-language model for remote sensing,
-  supporting region-level grounding, referring detection and visually grounded
-  conversation rather than whole-image captioning alone.
+The binding constraint in both cases is data. There is no web-scale corpus of
+captioned satellite imagery, so nearly every model below is really a proposal for
+how to *manufacture* image-text pairs — from OpenStreetMap tags, from existing
+detection boxes, or from a captioning model run over unlabelled archives.
+
+### Contrastive vision-language models
+
+- **RemoteCLIP** — Manufactures training pairs by converting existing annotations
+  (box-to-caption, mask-to-box) rather than scraping captions, yielding a 12×
+  larger pretraining set than was previously available.
+  [`paper`](https://arxiv.org/abs/2306.11029) [`code`](https://github.com/ChenDelong1999/RemoteCLIP) `TGRS'24` `retrieval, zero-shot classification` `594★`
+- **GeoRSCLIP / RS5M** — Builds a 5M image-text corpus by filtering public
+  paired datasets and captioning label-only RS datasets with a pretrained VLM,
+  then fine-tunes CLIP on it with full and parameter-efficient variants.
+  [`paper`](https://arxiv.org/abs/2306.11300) [`code`](https://github.com/om-ai-lab/RS5M) `TGRS'24†` `retrieval, zero-shot classification` `318★`
+- **SkyCLIP / SkyScript** — Pairs unlabelled imagery with OpenStreetMap semantics
+  through shared geo-coordinates, giving 5.2M pairs over 29K semantic tags with
+  no human captioning at all.
+  [`paper`](https://arxiv.org/abs/2312.12856) [`code`](https://github.com/wangzhecheng/SkyScript) `AAAI'24` `zero-shot classification, retrieval` `210★`
+- **PriorCLIP** — Injects visual priors into the alignment objective to handle the
+  scale and orientation variance that generic CLIP embeddings blur together.
+  [`paper`](https://arxiv.org/abs/2405.10160) `preprint` `retrieval`
+
+### Multimodal LLMs
+
+- **GeoChat** — The first *grounded* large vision-language model for remote
+  sensing: region-level grounding and referring detection rather than whole-image
+  captioning alone.
   [`paper`](https://openaccess.thecvf.com/content/CVPR2024/html/Kuckreja_GeoChat_Grounded_Large_Vision-Language_Model_for_Remote_Sensing_CVPR_2024_paper.html) [`code`](https://github.com/mbzuai-oryx/GeoChat) `CVPR'24` `MLLM, grounding`
-- **EarthGPT** — Universal multimodal LLM for multi-sensor comprehension, spanning
-  optical, SAR and infrared in a single instruction-following model.
+- **EarthGPT** — Unifies optical, SAR and infrared in one instruction-following
+  model via a visual-enhanced perception mechanism and cross-modal mutual
+  comprehension.
   [`paper`](https://arxiv.org/abs/2401.16822) `TGRS'24†` `MLLM, multi-sensor`
-- **LHRS-Bot** — Uses volunteered geographic information (OpenStreetMap) paired with
-  imagery to build instruction data at scale, rather than relying on human
-  annotation.
+- **LHRS-Bot** — Derives instruction data at scale from volunteered geographic
+  information paired with imagery, sidestepping human annotation entirely.
   [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24†` `MLLM, instruction tuning`
-- **RSGPT** — Remote sensing vision-language model released alongside a
-  human-annotated captioning and VQA benchmark.
+- **SkyEyeGPT** — Unifies RS vision-language tasks through instruction tuning on a
+  manually verified 968K-sample instruction-following corpus.
+  [`paper`](https://arxiv.org/abs/2401.09712) [`code`](https://github.com/ZhanYang-nwpu/SkyEyeGPT) `preprint` `MLLM, instruction tuning` `139★`
+- **RSGPT** — Released alongside RSICap and RSIEval, a small human-annotated
+  captioning and VQA benchmark built to evaluate RS VLMs properly.
   [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25†` `MLLM, captioning, VQA`
+- **VHM** — Trains on both factual and deliberately deceptive questions so the
+  model learns to decline unanswerable ones, targeting hallucination rather than
+  capability.
+  [`paper`](https://arxiv.org/abs/2403.20213) [`code`](https://github.com/opendatalab/VHM) `preprint` `MLLM, honesty` `125★`
+- **GeoGround** — Unifies the three grounding output formats (box, mask, text
+  coordinates) in one model rather than training a separate head per format.
+  [`paper`](https://arxiv.org/abs/2411.11904) [`code`](https://github.com/zytx121/GeoGround) `preprint` `visual grounding` `95★`
+
+### Promptable & referring models
+
+Adapting Segment Anything to overhead imagery is its own design problem: SAM is
+interactive by construction, and remote sensing needs it to run unattended over
+millions of tiles.
+
 - **RMSIN** — Intra-scale and cross-scale interaction with adaptive rotated
-  convolution for *referring* segmentation, where the query is free text. Introduces
-  the RRSIS-D benchmark.
+  convolution for referring segmentation from a free-text query. Introduces
+  RRSIS-D.
   [`paper`](https://arxiv.org/abs/2312.12470) [`code`](https://github.com/Lsan2401/RMSIN) `CVPR'24` `referring segmentation`
-- **RSPrompter** — Learns category-aware prompts that drive a frozen SAM decoder,
-  converting an interactive foundation model into an automatic instance segmenter.
-  [`paper`](https://arxiv.org/abs/2306.16269) [`code`](https://github.com/KyanChen/RSPrompter) `TGRS'24` `instance segmentation, SAM`
-- **AnyChange** — Training-free bi-temporal latent matching in SAM's latent space,
-  giving zero-shot change detection with no change-detection training at all.
-  [`paper`](https://arxiv.org/abs/2402.01188) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `NeurIPS'24` `zero-shot CD, SAM`
-- **BAN** — Freezes a CLIP or SAM backbone and bridges it to any existing change
-  detection head through a bi-temporal adapter, with few trainable parameters.
-  [`paper`](https://arxiv.org/abs/2312.01163) [`code`](https://github.com/likyoo/BAN) `TGRS'24` `change detection, PEFT`
-- **RSCaMa** — State-space model for change *captioning*, combining a
-  spatial-difference SSM with a temporal-traversing SSM.
-  [`paper`](https://arxiv.org/abs/2404.18895) [`code`](https://github.com/Chen-Yang-Liu/RSCaMa) `GRSL'24` `change captioning`
+
+Language- and SAM-conditioned models indexed under their primary family:
+
+- [RSPrompter](#semantic-segmentation) — learned prompts driving a frozen SAM
+  decoder for automatic instance segmentation. `TGRS'24`
+- [AnyChange](#change-detection) — training-free zero-shot change detection in
+  SAM's latent space. `NeurIPS'24`
+- [BAN](#change-detection) — freezes CLIP or SAM and bridges it to any change
+  detection head. `TGRS'24`
+- [RSCaMa](#change-detection-1) — state-space model for change captioning.
+  `GRSL'24`
+
+### Benchmarks
+
+- **VRSBench** — 29,614 human-verified captions, 52,472 object references and
+  123,221 QA pairs in one benchmark, covering captioning, grounding and VQA
+  together rather than one task in isolation.
+  [`paper`](https://arxiv.org/abs/2406.12384) [`code`](https://github.com/lx709/VRSBench) `NeurIPS'24` `benchmark` `75★`
 
 ---
 
 ## Diffusion & Generative Models
 
-> **Partial section.** See [Coverage status](#coverage-status).
+Diffusion arrived in remote sensing with an unusual advantage: the conditioning
+signal is unusually rich. A satellite image comes with geo-coordinates, ground
+sample distance, acquisition timestamp and sensor metadata, all of which are
+natural conditioning variables that a natural-image model simply does not have.
+Much of the work below is about exploiting that.
 
-- **DiffusionSat** — Conditions generation on numerical satellite metadata
-  (location, GSD, timestamp) alongside text, with conditioning modules trainable
-  for super-resolution, inpainting and temporal generation.
+The second thread is restoration. Clouds, speckle and low resolution are
+*physical* degradations with known structure, which makes them a better fit for a
+learned prior than generic inpainting.
+
+### Controllable generation
+
+- **DiffusionSat** — Conditions on numerical satellite metadata (location, GSD,
+  timestamp) alongside text, with conditioning modules trainable for
+  super-resolution, inpainting and temporal generation.
   [`paper`](https://proceedings.iclr.cc/paper_files/paper/2024/file/16c3c941409d0581286eff49b180930f-Paper-Conference.pdf) [`code`](https://github.com/samar-khanna/DiffusionSat) `ICLR'24` `generation, super-resolution`
-- **CRS-Diff** — Supports text, metadata and image conditioning simultaneously,
-  giving ControlNet-style fine-grained control over remote sensing generation.
+- **CRS-Diff** — Accepts text, metadata and image conditioning simultaneously,
+  giving ControlNet-style fine-grained control over the generation process.
   [`paper`](https://arxiv.org/abs/2403.11614) [`code`](https://github.com/Sonettoo/CRS-Diff) `preprint` `controllable generation`
-- **MetaEarth** — Resolution-conditioned generative model aimed at global-scale
-  image generation across zoom levels rather than single-tile synthesis.
+- **MetaEarth** — Resolution-conditioned generation aimed at global-scale synthesis
+  across zoom levels rather than single-tile output.
   [`paper`](https://arxiv.org/abs/2405.13570) `preprint` `generation`
+- **Text2Earth** — Text-driven generation trained on a global-scale corpus, framed
+  as a generative foundation model rather than a single-task generator.
+  [`paper`](https://arxiv.org/abs/2501.00895) [`code`](https://github.com/Chen-Yang-Liu/Text2Earth) `preprint` `text-to-image` `191★`
+
+### Restoration & super-resolution
+
+- **EDiffSR** — Efficient conditional diffusion for super-resolution, using a
+  lightweight prior encoder to avoid the over-smoothing and training instability
+  of earlier diffusion SR.
+  [`paper`](https://arxiv.org/abs/2310.19288) [`code`](https://github.com/XY-boy/EDiffSR) `TGRS'24†` `super-resolution` `200★`
+- **DiffCR** — Fast conditional diffusion for cloud removal, reaching
+  state-of-the-art with roughly 5% of the parameters and compute of the prior
+  best method.
+  [`paper`](https://arxiv.org/abs/2308.04417) [`code`](https://github.com/XavierJiezou/DiffCR) `TGRS'24†` `cloud removal` `89★`
+
+### Generative models as label factories
+
+The most consequential use of generative models here is not making pictures — it
+is manufacturing *supervised training data* for tasks where labels are scarce.
+
 - **Changen2** — Generative change process model that synthesises labelled
-  multi-temporal sequences, producing pretrained weights with zero-shot change
+  multi-temporal sequences, yielding pretrained weights with zero-shot change
   detection capability. Cross-listed from
   [Vision Transformers](#change-detection).
   [`paper`](https://arxiv.org/abs/2406.17998) [`code`](https://github.com/Z-Zheng/pytorch-change-models) `TPAMI'24` `generative CD`
@@ -898,8 +980,8 @@ covered is more useful than implying uniform depth.
 | Mamba & state-space | **Complete** — venues and code links verified |
 | Hyperspectral | **Complete** — the deepest section, with dataset guidance |
 | Efficient architectures | **Complete** |
-| Vision-language models | **Partial** — verified entries only; many recent models not yet indexed |
-| Diffusion & generative | **Partial** — verified entries only |
+| Vision-language models | **Complete** — contrastive, MLLM, promptable and benchmarks |
+| Diffusion & generative | **Complete** — controllable generation, restoration, synthetic labels |
 | SAR | **Seeded** — despeckling and cross-references; ATR and InSAR still missing |
 | 3D, LiDAR & neural fields | **Seeded** — Sat-NeRF added; Gaussian splatting and height estimation missing |
 | Satellite image time series | **Seeded** — U-TAE and TSViT added; Presto and TESSERA pending verification |
