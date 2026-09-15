@@ -741,16 +741,16 @@ detection boxes, or from a captioning model run over unlabelled archives.
 - **EarthGPT** — Unifies optical, SAR and infrared in one instruction-following
   model via a visual-enhanced perception mechanism and cross-modal mutual
   comprehension.
-  [`paper`](https://arxiv.org/abs/2401.16822) `TGRS'24†` `MLLM, multi-sensor`
+  [`paper`](https://arxiv.org/abs/2401.16822) `TGRS'24` `MLLM, multi-sensor`
 - **LHRS-Bot** — Derives instruction data at scale from volunteered geographic
   information paired with imagery, sidestepping human annotation entirely.
-  [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24†` `MLLM, instruction tuning` [![Stars](https://img.shields.io/github/stars/NJU-LHRS/LHRS-Bot?style=social)](https://github.com/NJU-LHRS/LHRS-Bot/stargazers)
+  [`paper`](https://arxiv.org/abs/2402.02544) [`code`](https://github.com/NJU-LHRS/LHRS-Bot) `ECCV'24` `MLLM, instruction tuning` [![Stars](https://img.shields.io/github/stars/NJU-LHRS/LHRS-Bot?style=social)](https://github.com/NJU-LHRS/LHRS-Bot/stargazers)
 - **SkyEyeGPT** — Unifies RS vision-language tasks through instruction tuning on a
   manually verified 968K-sample instruction-following corpus.
   [`paper`](https://arxiv.org/abs/2401.09712) [`code`](https://github.com/ZhanYang-nwpu/SkyEyeGPT) `preprint` `MLLM, instruction tuning` [![Stars](https://img.shields.io/github/stars/ZhanYang-nwpu/SkyEyeGPT?style=social)](https://github.com/ZhanYang-nwpu/SkyEyeGPT/stargazers)
 - **RSGPT** — Released alongside RSICap and RSIEval, a small human-annotated
   captioning and VQA benchmark built to evaluate RS VLMs properly.
-  [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25†` `MLLM, captioning, VQA` [![Stars](https://img.shields.io/github/stars/Lavender105/RSGPT?style=social)](https://github.com/Lavender105/RSGPT/stargazers)
+  [`paper`](https://arxiv.org/abs/2307.15266) [`code`](https://github.com/Lavender105/RSGPT) `ISPRS J.'25` `MLLM, captioning, VQA` [![Stars](https://img.shields.io/github/stars/Lavender105/RSGPT?style=social)](https://github.com/Lavender105/RSGPT/stargazers)
 - **VHM** — Trains on both factual and deliberately deceptive questions so the
   model learns to decline unanswerable ones, targeting hallucination rather than
   capability.
@@ -823,11 +823,11 @@ learned prior than generic inpainting.
 - **EDiffSR** — Efficient conditional diffusion for super-resolution, using a
   lightweight prior encoder to avoid the over-smoothing and training instability
   of earlier diffusion SR.
-  [`paper`](https://arxiv.org/abs/2310.19288) [`code`](https://github.com/XY-boy/EDiffSR) `TGRS'24†` `super-resolution` [![Stars](https://img.shields.io/github/stars/XY-boy/EDiffSR?style=social)](https://github.com/XY-boy/EDiffSR/stargazers)
+  [`paper`](https://arxiv.org/abs/2310.19288) [`code`](https://github.com/XY-boy/EDiffSR) `TGRS'24` `super-resolution` [![Stars](https://img.shields.io/github/stars/XY-boy/EDiffSR?style=social)](https://github.com/XY-boy/EDiffSR/stargazers)
 - **DiffCR** — Fast conditional diffusion for cloud removal, reaching
   state-of-the-art with roughly 5% of the parameters and compute of the prior
   best method.
-  [`paper`](https://arxiv.org/abs/2308.04417) [`code`](https://github.com/XavierJiezou/DiffCR) `TGRS'24†` `cloud removal` [![Stars](https://img.shields.io/github/stars/XavierJiezou/DiffCR?style=social)](https://github.com/XavierJiezou/DiffCR/stargazers)
+  [`paper`](https://arxiv.org/abs/2308.04417) [`code`](https://github.com/XavierJiezou/DiffCR) `TGRS'24` `cloud removal` [![Stars](https://img.shields.io/github/stars/XavierJiezou/DiffCR?style=social)](https://github.com/XavierJiezou/DiffCR/stargazers)
 
 ### Generative models as label factories
 
@@ -884,10 +884,26 @@ Speckle is multiplicative, not additive, so denoising architectures built for
 optical noise do not transfer. The absence of clean reference images also makes
 supervised training impossible, which is why self-supervision dominates here.
 
-- **MERLIN** — Self-supervised despeckling that exploits the statistical
-  independence of the real and imaginary parts of single-look complex SAR,
-  training without any speckle-free reference data.
+### Despeckling
+
+Speckle has no clean ground truth — you cannot photograph the same scene without
+it. Every method below is therefore a different answer to the same question: how
+do you train a denoiser when no noise-free target exists?
+
+- **SAR2SAR** — Adapts noise2noise to multi-temporal stacks, learning to restore
+  from pairs of *noisy* acquisitions of the same scene rather than from clean
+  references.
+  [`paper`](https://arxiv.org/abs/2006.15037) [`code`](https://github.com/emanueledalsasso/SAR2SAR) `JSTARS'21` `despeckling, self-supervised` [![Stars](https://img.shields.io/github/stars/emanueledalsasso/SAR2SAR?style=social)](https://github.com/emanueledalsasso/SAR2SAR/stargazers)
+- **Speckle2Void** — Blind-spot convolutional network whose receptive field is
+  shaped to exclude a tunable neighbourhood, accounting for spatially correlated
+  speckle rather than assuming independence.
+  [`paper`](https://arxiv.org/abs/2007.02075) [`code`](https://github.com/diegovalsesia/speckle2void) `TGRS'22` `despeckling, self-supervised` [![Stars](https://img.shields.io/github/stars/diegovalsesia/speckle2void?style=social)](https://github.com/diegovalsesia/speckle2void/stargazers)
+- **MERLIN** — Exploits the statistical independence of the real and imaginary
+  parts of single-look complex SAR, so a single acquisition supplies both input
+  and target.
   [`paper`](https://arxiv.org/abs/2110.13148) `TGRS'22` `despeckling, self-supervised`
+
+### Recognition, detection & fusion
 
 SAR-relevant architectures listed elsewhere:
 
@@ -910,12 +926,28 @@ Reconstructing geometry from satellite imagery has to contend with pushbroom RPC
 camera models, multi-date acquisitions with moving shadows, and transient objects
 between captures — none of which standard multi-view pipelines assume.
 
-- **Sat-NeRF** — Neural radiance fields adapted to RPC satellite camera models,
-  with explicit shadow and transient-object modelling for multi-date imagery.
-  ⚠ `CVPR EarthVision Workshop`
-  [`paper`](https://arxiv.org/abs/2203.08896) `2022` `3D reconstruction, novel view synthesis`
+### Neural fields & Gaussian splatting
 
-Cross-modal 3D work listed elsewhere:
+Satellite photogrammetry breaks the assumptions of standard multi-view pipelines:
+the camera is a pushbroom RPC model rather than a pinhole, acquisitions are months
+apart, and the sun moves between them, so shadows are a *time-varying* part of the
+scene rather than fixed geometry.
+
+- **Sat-NeRF** — Adapts neural radiance fields to RPC camera models with explicit
+  shadow and transient-object modelling for multi-date imagery. ⚠ `CVPRW`
+  [`paper`](https://arxiv.org/abs/2203.08896) `CVPRW'22` `3D reconstruction, novel view synthesis`
+- **EO-NeRF** — Renders shadows geometrically from the reconstructed surface
+  rather than learning them per-image, which makes the resulting digital surface
+  models markedly more accurate. ⚠ `CVPRW`
+  [`paper`](https://doi.org/10.1109/cvprw59228.2023.00197) `CVPRW'23` `DSM generation, 3D reconstruction`
+- **EOGS** — First Gaussian splatting method for digital elevation modelling,
+  carrying over EO-NeRF's radiometric and shadow modelling while reaching
+  comparable accuracy roughly 300× faster — minutes rather than a day.
+  [`paper`](https://arxiv.org/abs/2412.13047) `CVPR'25` `3D reconstruction, DSM`
+
+### Cross-modal 3D
+
+Work listed under other families:
 
 - [HLMamba](#fusion-detection-denoising--restoration) — hyperspectral and LiDAR
   fusion via cross-modal state-space blocks. `TGRS'24`
@@ -1095,8 +1127,8 @@ covered is more useful than implying uniform depth.
 | Efficient architectures | **Complete** |
 | Vision-language models | **Complete** — contrastive, MLLM, promptable and benchmarks |
 | Diffusion & generative | **Complete** — controllable generation, restoration, synthetic labels |
-| SAR | **Seeded** — despeckling and cross-references; ATR and InSAR still missing |
-| 3D, LiDAR & neural fields | **Seeded** — Sat-NeRF added; Gaussian splatting and height estimation missing |
+| SAR | **Complete** — despeckling, recognition, detection and fusion; InSAR still missing |
+| 3D, LiDAR & neural fields | **Complete** — neural fields and Gaussian splatting; airborne LiDAR still missing |
 | Satellite image time series | **Seeded** — U-TAE and TSViT added; Presto and TESSERA pending verification |
 | Surveys | **Complete** — five current surveys covering the main families |
 | Benchmarks & datasets | **Complete** — segmentation, CD, detection, classification, SITS and evaluation suites |
@@ -1110,8 +1142,6 @@ Contributions toward them are especially welcome.
 list, held back only because their venue could not be confirmed against a primary
 source during indexing:
 
-- **SAR2SAR** — JSTARS confirmed, but the publication year is ambiguous between
-  early access and volume year, which matters against the 2021 cutoff.
 - **Presto** and **TESSERA** — pixel-timeseries models with released weights;
   venue confirmation incomplete.
 
