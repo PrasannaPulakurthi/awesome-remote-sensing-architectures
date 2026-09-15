@@ -58,15 +58,20 @@ AAAI, IJCAI, TPAMI, IJCV.
 
 **Remote sensing and geoscience** — IEEE TGRS, ISPRS Journal of Photogrammetry and
 Remote Sensing, Remote Sensing of Environment, IEEE JSTARS, IEEE GRSL, IEEE
-Geoscience and Remote Sensing Magazine.
+Geoscience and Remote Sensing Magazine, IGARSS.
 
 **Adjacent journals accepted where the work is central to a sub-area** — IEEE TIP,
 IEEE TMM, IEEE TCSVT, Information Fusion, Nature Machine Intelligence.
 
 Anything else is marked ⚠ and included only when excluding it would leave a
-sub-area without its most-cited work. IGARSS, MDPI journals and workshop papers
-are generally out of scope, with a small number of flagged exceptions where the
-model has become a de-facto baseline.
+sub-area without its most-cited work. MDPI journals and workshop papers are
+generally out of scope, with a small number of flagged exceptions where the model
+has become a de-facto baseline.
+
+IGARSS was excluded in earlier revisions of this list and has since been
+admitted. It is the IEEE GRSS flagship conference, and keeping it out meant
+excluding work like ChangeFormer that the field treats as a standard baseline —
+a stricter line than the list's own stated purpose justified.
 
 ---
 
@@ -327,6 +332,11 @@ extreme size of a single scene.
   network into a change detector, removing the need for paired bi-temporal labels
   entirely.
   [`paper`](https://arxiv.org/abs/2108.07002) [`code`](https://github.com/Z-Zheng/ChangeStar) `ICCV'21` `weakly-supervised CD` [![Stars](https://img.shields.io/github/stars/Z-Zheng/ChangeStar?style=social)](https://github.com/Z-Zheng/ChangeStar)
+- **ChangeFormer** — Siamese hierarchical transformer encoder with an MLP decoder,
+  discarding the CNN backbone entirely so multi-scale long-range context is
+  available at every stage. A standard baseline in the change detection
+  literature.
+  [`paper`](https://arxiv.org/abs/2201.01293) [`code`](https://github.com/wgcban/ChangeFormer) `IGARSS'22` `change detection` [![Stars](https://img.shields.io/github/stars/wgcban/ChangeFormer?style=social)](https://github.com/wgcban/ChangeFormer)
 - **ICIF-Net** — Parallel CNN and transformer branches communicate at equal
   resolution, then fuse across scales, avoiding the local-global misalignment of
   late fusion.
@@ -345,6 +355,10 @@ extreme size of a single scene.
 - **BAN** — Bi-temporal adapter network that freezes a foundation model (CLIP or
   SAM) and bridges it to any existing CD head with few learnable parameters.
   [`paper`](https://arxiv.org/abs/2312.01163) [`code`](https://github.com/likyoo/BAN) `TGRS'24` `change detection, PEFT` [![Stars](https://img.shields.io/github/stars/likyoo/BAN?style=social)](https://github.com/likyoo/BAN)
+- **TTP** — Adapts SAM to bi-temporal change detection with time-travelling
+  activations that bridge the domain gap between natural-image pretraining and
+  multi-temporal remote sensing.
+  [`paper`](https://arxiv.org/abs/2312.16202) [`code`](https://github.com/KyanChen/TTP) `IGARSS'24` `change detection, SAM` [![Stars](https://img.shields.io/github/stars/KyanChen/TTP?style=social)](https://github.com/KyanChen/TTP)
 - **Changen2** — Resolution-scalable generative change process model that
   synthesises labelled multi-temporal sequences, yielding zero-shot-capable
   pretrained CD weights.
@@ -635,6 +649,14 @@ pixels. These models change what the starting point looks like.
   spectral embeddings with a pyramid SSM backbone, for target detection.
   ESI Highly Cited.
   [`paper`](https://arxiv.org/abs/2407.06841) [`code`](https://github.com/shendb2022/HTD-Mamba) `TGRS'25` `target detection` [![Stars](https://img.shields.io/github/stars/shendb2022/HTD-Mamba?style=social)](https://github.com/shendb2022/HTD-Mamba)
+- **PFM-1 Spectral NN** — Lightweight spectral network with parametric Mish
+  activations, benchmarked against the classical statistical detectors the field
+  actually uses (SAM, matched filter, ACE, CEM) rather than against other neural
+  baselines alone. Releases pixel-level target/background masks for UAV VNIR
+  landmine detection, a task with almost no standardised evaluation.
+  [`paper`](https://arxiv.org/abs/2602.10434) [`code`](https://github.com/PrasannaPulakurthi/pfm1-hsi-benchmark) `IGARSS'26` `target detection, UAV` [![Stars](https://img.shields.io/github/stars/PrasannaPulakurthi/pfm1-hsi-benchmark?style=social)](https://github.com/PrasannaPulakurthi/pfm1-hsi-benchmark)
+  <br><sub>Maintainer-authored. Listed under the same criteria as every other
+  entry: venue confirmed from the arXiv record, code link verified.</sub>
 - **MSFMamba** — Three-block design (multi-scale spatial Mamba, spectral Mamba,
   dual-input fusion Mamba) extending Mamba to two heterogeneous sources.
   [`paper`](https://arxiv.org/abs/2408.14255) [`code`](https://github.com/oucailab/MSFMamba) `TGRS'25` `HSI+LiDAR/SAR fusion` [![Stars](https://img.shields.io/github/stars/oucailab/MSFMamba?style=social)](https://github.com/oucailab/MSFMamba)
