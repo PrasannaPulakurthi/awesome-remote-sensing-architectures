@@ -43,7 +43,7 @@ CUTOFF_YEAR = 2021
 ALLOWED_VENUES = {
     "CVPR", "ICCV", "ECCV", "NeurIPS", "ICLR", "ICML", "AAAI", "IJCAI",
     "TPAMI", "IJCV", "TGRS", "ISPRS J.", "RSE", "JSTARS", "GRSL",
-    "GRSM", "IEEE GRSM",
+    "GRSM", "IEEE GRSM", "IGARSS",
     "IEEE TIP", "IEEE TMM", "IEEE TCSVT", "Information Fusion",
     "Nat. Mach. Intell.",
 }
@@ -309,6 +309,8 @@ VENUE_PATTERNS = {
     "Nat. Mach. Intell.": (["nature machine intelligence"], []),
     "AAAI": (["aaai conference on artificial intelligence"], []),
     "IJCAI": (["international joint conference on artificial intelligence"], []),
+    "IGARSS": (["international geoscience and remote sensing symposium",
+                "igarss"], []),
 }
 
 
