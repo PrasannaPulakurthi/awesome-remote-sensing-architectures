@@ -904,6 +904,23 @@ do you train a denoiser when no noise-free target exists?
   and target.
   [`paper`](https://arxiv.org/abs/2110.13148) `TGRS'22` `despeckling, self-supervised`
 
+### Interferometry
+
+InSAR phase is measured modulo 2π, so recovering absolute deformation means
+resolving how many whole cycles were lost — an integer problem wrapped inside a
+continuous one, which is why it resists a plain regression formulation.
+
+- **Unwrap-Net** — Treats phase unwrapping as semantic segmentation over wrap
+  counts, fusing gradient information and using airborne LiDAR as supervision to
+  limit the error propagation that defeats classical path-following methods.
+  [`paper`](https://doi.org/10.1016/j.isprsjprs.2024.11.009) [`code`](https://github.com/yangwangyangzi48/UNWRAPNETV1) `ISPRS J.'24` `phase unwrapping` [![Stars](https://img.shields.io/github/stars/yangwangyangzi48/UNWRAPNETV1?style=social)](https://github.com/yangwangyangzi48/UNWRAPNETV1/stargazers)
+
+Most deep-learning InSAR work — phase filtering, coherence estimation,
+deformation time series — is published in venues outside this list's policy,
+chiefly MDPI *Remote Sensing* and the ISPRS Annals. That is a property of where
+the sub-field publishes rather than a judgement on the work, and it is the reason
+this subsection is short.
+
 ### Recognition, detection & fusion
 
 SAR-relevant architectures listed elsewhere:
@@ -945,6 +962,27 @@ scene rather than fixed geometry.
   carrying over EO-NeRF's radiometric and shadow modelling while reaching
   comparable accuracy roughly 300× faster — minutes rather than a day.
   [`paper`](https://arxiv.org/abs/2412.13047) `CVPR'25` `3D reconstruction, DSM`
+
+### Airborne LiDAR
+
+Worth being direct about this one: airborne LiDAR segmentation is mostly done
+with **general-purpose 3D architectures** rather than remote-sensing-specific
+ones. The field's workhorses — KPConv (ICCV'19), RandLA-Net (CVPR'20) — predate
+this list's 2021 cutoff, and their successors are general 3D vision papers that
+happen to be applied to aerial data.
+
+- **Point Transformer V3** — Trades sophisticated attention mechanisms for scale,
+  using serialised point ordering to process far larger point clouds; the current
+  default backbone for large-scale LiDAR segmentation, aerial included. Not
+  remote-sensing-specific.
+  [`paper`](https://doi.org/10.1109/cvpr52733.2024.00463) [`code`](https://github.com/Pointcept/PointTransformerV3) `CVPR'24` `point cloud segmentation` [![Stars](https://img.shields.io/github/stars/Pointcept/PointTransformerV3?style=social)](https://github.com/Pointcept/PointTransformerV3/stargazers)
+
+Remote-sensing-specific airborne LiDAR architectures are published almost
+entirely in the ISPRS Annals, MDPI *Remote Sensing* and similar venues outside
+this list's policy. If you work in this area, the ISPRS 3D Semantic Labeling
+benchmark and the FRACTAL dataset are the standard evaluation targets, and
+[Pointcept](https://github.com/Pointcept/Pointcept) is the most practical
+codebase.
 
 ### Cross-modal 3D
 
@@ -1128,8 +1166,8 @@ covered is more useful than implying uniform depth.
 | Efficient architectures | **Complete** |
 | Vision-language models | **Complete** — contrastive, MLLM, promptable and benchmarks |
 | Diffusion & generative | **Complete** — controllable generation, restoration, synthetic labels |
-| SAR | **Complete** — despeckling, recognition, detection and fusion; InSAR still missing |
-| 3D, LiDAR & neural fields | **Complete** — neural fields and Gaussian splatting; airborne LiDAR still missing |
+| SAR | **Complete** — despeckling, interferometry, recognition, detection and fusion |
+| 3D, LiDAR & neural fields | **Complete** — neural fields, Gaussian splatting and airborne LiDAR |
 | Satellite image time series | **Complete** — U-TAE, TSViT and Exchanger, plus cross-references |
 | Surveys | **Complete** — five current surveys covering the main families |
 | Benchmarks & datasets | **Complete** — segmentation, CD, detection, classification, SITS and evaluation suites |
@@ -1148,8 +1186,11 @@ source during indexing:
   weights. Crossref holds no record for either, and the strongest evidence found
   for Presto is an ICLR 2024 *submission* header, which is not an acceptance.
   Both stay out until a venue can be confirmed.
-- **InSAR** architectures and **airborne LiDAR** semantic segmentation are not
-  yet covered; both are real gaps rather than deliberate exclusions.
+- **InSAR** and **airborne LiDAR** are now covered, but thinly, and deliberately
+  so. Both sub-fields publish mainly in venues outside this list's policy, and
+  airborne LiDAR is dominated by general-purpose 3D architectures that predate
+  the 2021 cutoff. Each section says so rather than padding itself with
+  out-of-policy entries.
 
 ### On verification
 
