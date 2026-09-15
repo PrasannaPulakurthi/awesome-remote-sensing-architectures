@@ -921,6 +921,116 @@ Cross-modal 3D work listed elsewhere:
 
 ---
 
+## Surveys
+
+Start here if you are new to a sub-area. A good survey saves weeks; these are the
+ones that are current enough to be worth the time.
+
+- **Vision Foundation Models in Remote Sensing: A Survey** — Covers foundation
+  models from June 2021 to June 2024, organised by pretraining strategy and by
+  task level (image, pixel, region, spatiotemporal). The most complete single
+  reference for this list's largest section.
+  [`paper`](https://arxiv.org/abs/2408.03464) `IEEE GRSM'25`
+- **Foundation Models for Remote Sensing and Earth Observation: A Survey** —
+  Complementary coverage with a stronger emphasis on Earth observation
+  applications rather than architecture taxonomy.
+  [`paper`](https://arxiv.org/abs/2410.16602) `preprint`
+- **A Survey on Remote Sensing Foundation Models: From Vision to Multimodality** —
+  Traces the shift from single-sensor vision models to the multimodal and
+  any-sensor designs that now dominate.
+  [`paper`](https://arxiv.org/abs/2503.22081) `preprint`
+- **Vision Mamba in Remote Sensing: A Comprehensive Survey** — The reference
+  survey for the state-space family, with a companion repository tracking new
+  work.
+  [`paper`](https://arxiv.org/abs/2505.00630) `preprint`
+- **Remote Sensing SpatioTemporal Vision-Language Models: A Comprehensive
+  Survey** — Covers the vision-language literature with attention to the
+  temporal dimension, which most VLM surveys skip.
+  [`paper`](https://arxiv.org/abs/2412.02573) `preprint`
+
+---
+
+## Benchmarks & Datasets
+
+This is not an exhaustive catalogue — [satellite-image-deep-learning/datasets](https://github.com/satellite-image-deep-learning/datasets)
+already does that well. The purpose here is narrower: these are the benchmarks the
+architectures in this list actually report on, so you can tell which numbers are
+comparable to which.
+
+Two warnings before you use any of them.
+
+**Check the split protocol before comparing numbers.** Several of these ship an
+official split and several do not, and papers using self-constructed splits are
+not comparable with papers using the official one even on the same dataset. The
+hyperspectral case is severe enough to have [its own note](#a-note-on-hsi-benchmarking).
+
+**Saturation is common.** On several long-standing benchmarks the spread between
+the top ten methods is smaller than the variance from training seed and
+augmentation choices. A new state of the art on Potsdam means considerably less
+than a new state of the art on a large, geographically diverse benchmark.
+
+### Semantic segmentation
+
+| Dataset | Scale | Notes |
+|---|---|---|
+| **ISPRS Potsdam / Vaihingen** | 38 / 33 tiles, 6 classes | The long-standing default. Small, urban, European, and effectively saturated — treat as a sanity check. Used by [UNetFormer](#semantic-segmentation), [DC-Swin](#semantic-segmentation), [DeepKANSeg](#efficient-architectures). |
+| **LoveDA** | 5,987 patches at 1024², 0.3 m, 7 classes | Explicitly built for *domain adaptive* segmentation, with an urban/rural split that creates a real distribution shift. [`paper`](https://arxiv.org/abs/2110.08733) |
+| **iSAID** | 2,806 images, 655,451 instances, 15 classes | Instance segmentation on very large aerial images. The instance counts per image are far higher than in natural-image benchmarks. |
+| **OpenEarthMap** | 5,000 images, 0.25-0.5 m, 8 classes | Global coverage across 97 regions and 44 countries, which makes it a much better generalisation test than the European city benchmarks. [`paper`](https://arxiv.org/abs/2210.10732) |
+| **Five-Billion-Pixels** | 150 Gaofen-2 images, 24 classes | >5 billion labelled pixels with a fine-grained 24-category system; useful when you need category depth rather than image count. |
+
+### Change detection
+
+| Dataset | Scale | Notes |
+|---|---|---|
+| **LEVIR-CD** | 637 pairs at 1024², 0.5 m | Building change across 20 Texas regions, 2002-2018. The near-universal default. Used by [BIT](#change-detection), [Changer](#change-detection), [ChangeMamba](#change-detection-1), [CDMamba](#change-detection-1). |
+| **S2Looking** | 5,000 pairs at 1024², 0.5-0.8 m | Deliberately harder: side-looking off-nadir imagery across five continents, so registration error and parallax are part of the problem. [`paper`](https://arxiv.org/abs/2107.09244) |
+| **WHU-CD** | 1 pair, 32,507×15,354 | Building change over Christchurch after the 2011 earthquake. |
+| **SECOND** | 4,662 pairs | *Semantic* change detection — what the land became, not merely that it changed. Used by [SCanNet](#change-detection), [ChangeMamba](#change-detection-1). |
+| **xBD / xView2** | 22,068 images | Building damage assessment with four-level damage grading across 19 disasters. The damage grading makes it ordinal, not binary. |
+
+### Object detection
+
+| Dataset | Scale | Notes |
+|---|---|---|
+| **DOTA (v1.0 / v2.0)** | 2,806 / 11,268 images, 15 / 18 classes | The standard oriented detection benchmark. Images run to tens of thousands of pixels and are normally tiled to 1024². Used by [Oriented R-CNN](#oriented-object-detection), [LSKNet](#oriented-object-detection), [ARC](#oriented-object-detection), [PKINet](#oriented-object-detection), [RVSA](#plain-vit-backbones--parameter-scaling). |
+| **DIOR / DIOR-R** | 23,463 images, 192,472 instances, 20 classes | Broad geographic coverage across 80+ countries; DIOR-R adds oriented boxes. |
+| **FAIR1M** | 40,000+ images, 1M+ instances | Fine-grained: 5 categories and 37 subcategories, so it tests discrimination rather than localisation. |
+| **SARDet-100K** | 116,598 images | The first COCO-scale multi-class SAR detection benchmark. Ships with [MSFA](#oriented-object-detection) pretraining. |
+
+### Scene classification & pretraining corpora
+
+| Dataset | Scale | Notes |
+|---|---|---|
+| **NWPU-RESISC45** | 31,500 images, 45 classes | Standard classification benchmark; saturated but still universally reported. |
+| **AID** | 10,000 images, 30 classes | Aerial scene classification, commonly paired with RESISC45. |
+| **BigEarthNet / -v2** | 590,326 patches, Sentinel-1+2 | Multi-label land cover at continental scale; v2 corrects label noise in the original. The default multispectral benchmark. |
+| **fMoW / fMoW-Sentinel** | 1M+ images, temporal | Functional Map of the World — the pretraining corpus behind [SatMAE](#masked-image-modeling), [Scale-MAE](#masked-image-modeling) and [SatMAE++](#masked-image-modeling). |
+| **MillionAID** | 1M images | Large-scale classification corpus used for [RSP](#plain-vit-backbones--parameter-scaling) and [RVSA](#plain-vit-backbones--parameter-scaling) pretraining. |
+| **SSL4EO-S12** | 251K locations × 4 seasons, 1.5 TB | The de-facto Sentinel-1/2 self-supervised pretraining corpus. See [Agency & open-release models](#agency--open-release-models). |
+| **SatlasPretrain** | 856K tiles, 302M labels | Large-scale *supervised* multi-task pretraining. See [Plain-ViT backbones](#plain-vit-backbones--parameter-scaling). |
+| **Major TOM** | 2.2M+ patches, ~40 TB | A grid and metadata standard rather than a fixed dataset; now the common distribution format on Hugging Face. |
+
+### Time series & multimodal
+
+| Dataset | Scale | Notes |
+|---|---|---|
+| **PASTIS / PASTIS-HD** | 2,433 Sentinel-2 time series | Panoptic crop mapping; introduced with [U-TAE](#satellite-image-time-series) and extended by [OmniSat](#multi-modal-foundation-models). The reference SITS benchmark. |
+| **Sen1Floods11** | 4,831 chips | Flood mapping from paired Sentinel-1 and Sentinel-2, a standard foundation-model downstream task. |
+| **SEN12MS** | 180,662 triplets | Sentinel-1 SAR, Sentinel-2 optical and land cover, aligned. Common for SAR-optical fusion. |
+
+### Evaluation suites
+
+Prefer these to single-dataset comparisons when assessing a foundation model —
+they exist because per-dataset numbers proved unreliable for that purpose.
+
+- **GEO-Bench** — 6 classification and 6 segmentation tasks with a defined
+  aggregation methodology. See [Benchmarks for foundation models](#benchmarks-for-foundation-models).
+- **PANGAEA** — 12 datasets across 7 task types, built to correct geographic bias.
+- **Copernicus-Bench** — 15 hierarchical tasks structured by Sentinel mission.
+
+---
+
 ## Libraries & Tooling
 
 Frameworks that make the models above practical to train, fine-tune and deploy.
@@ -985,8 +1095,8 @@ covered is more useful than implying uniform depth.
 | SAR | **Seeded** — despeckling and cross-references; ATR and InSAR still missing |
 | 3D, LiDAR & neural fields | **Seeded** — Sat-NeRF added; Gaussian splatting and height estimation missing |
 | Satellite image time series | **Seeded** — U-TAE and TSViT added; Presto and TESSERA pending verification |
-| Surveys | **Planned** |
-| Benchmarks & datasets | **Partial** — hyperspectral only; segmentation, CD, detection and SITS benchmarks missing |
+| Surveys | **Complete** — five current surveys covering the main families |
+| Benchmarks & datasets | **Complete** — segmentation, CD, detection, classification, SITS and evaluation suites |
 
 Planned sections are genuinely absent rather than thin, and seeded sections are
 deliberately short — they contain only entries verified against a primary source,
