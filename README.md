@@ -678,6 +678,16 @@ comparison set, which is a problem — see the note below.
 | Houston 2018 | CASI + LiDAR | 48 | 20 | GRSS DFC 2018; multimodal. |
 | WHU-Hi (Longkou / Hanchuan / Honghu) | UAV-borne | 270-274 | 9-22 | Low-altitude UAV, fine crop classes; more realistic than the AVIRIS scenes. |
 
+**Target detection.** A different task shape from the classification scenes
+above: the ground truth is a binary target/background mask rather than a
+land-cover label map, and the target occupies a tiny fraction of the pixels.
+Standardised benchmarks for this are scarce, which is why detector comparisons in
+the literature are often not comparable.
+
+| Dataset | Sensor | Task | Notes |
+|---|---|---|---|
+| PFM-1 UAV VNIR | UAV-borne VNIR | Landmine detection | Pixel-level binary target/background masks over inert PFM-1 targets across multiple scene crops. Released to make detector comparison reproducible on a task that had almost no standardised evaluation. [`code`](https://github.com/PrasannaPulakurthi/pfm1-hsi-benchmark) · see [PFM-1 Spectral NN](#fusion-detection-denoising--restoration) |
+
 **Modern large-scale corpora.** These are what pretraining actually needs, and the
 reason foundation models became possible for HSI.
 
