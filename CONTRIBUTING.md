@@ -76,8 +76,19 @@ accurate. That is still a human reading the paper.
 
 ## Star counts
 
-Star counts are indicative, refreshed periodically, and deliberately not
-load-bearing — do not open a PR solely to bump a number.
+Star counts are live [shields.io](https://shields.io) badges generated from the
+code link, so they update themselves. **Never type a count by hand** — a number
+written into the file is stale the moment the repository changes, and the
+verifier will flag it.
+
+Badge format, derived directly from the repository URL:
+
+```
+[![Stars](https://img.shields.io/github/stars/OWNER/REPO?style=social)](https://github.com/OWNER/REPO/stargazers)
+```
+
+Stars indicate adoption, not quality. Plenty of excellent work has few, and they
+are deliberately not load-bearing in any inclusion decision.
 
 ## Corrections
 

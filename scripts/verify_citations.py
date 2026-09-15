@@ -6,6 +6,7 @@ What this catches:
     This is the single most common way a fabricated citation enters a list.
   * A DOI whose Crossref record disagrees with the venue tag in the entry.
   * A code repository that no longer exists.
+  * A hardcoded star count where a live badge belongs.
   * A venue outside the policy list, or a year before the cutoff.
   * Duplicate paper links.
 
@@ -374,9 +375,12 @@ def verify(entries, check_stars=True, delay=1.0):
                     "repository %s/%s not checked (API rate limited)"
                     % (gm.group("owner"), repo)))
             elif check_stars and e.stars:
-                if abs(stars - e.stars) / float(max(e.stars, 1)) > 0.5:
-                    findings.append(Finding("warn", label,
-                        "recorded %d stars but repository now has %d" % (e.stars, stars)))
+                # Star counts live in shields.io badges generated from the code
+                # link, so a number written into the file is stale by
+                # construction rather than merely out of date.
+                findings.append(Finding("warn", label,
+                    "hardcoded star count %d found - use a live badge instead"
+                    % e.stars))
     return findings
 
 
